@@ -1,4 +1,8 @@
 <?xml version = "1.0"?>
+<!-- Your IDE can use this, but you can also run this from a terminal if you put
+    ant on your path and set JAVA_HOME. Your IDE already has a copy of ant, e.g.
+    C:\Program Files\NetBeans 8.0.2\extide\ant\bin
+-->
 <project name="HW2" default="dist" basedir=".">
   <description>
     HW2 Build File
