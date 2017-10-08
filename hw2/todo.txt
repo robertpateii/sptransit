@@ -1,0 +1,6 @@
+X Rob to put template into new folder in shared repo asap
+- Rob to implement client side & finish batch files
+- Samuel to implement server side, assuming one server
+- Rob to read global state for q1 q2 & lamport's mutex for q3
+- Samuel to read the same
+- Meet sunday 10-11am oct 8th to finalize q1, q2, and plan q3 next steps
