@@ -25,4 +25,17 @@
     <!-- Delete the ${build} and ${dist} directory trees -->
     <delete dir="${build}"/>
   </target>
+  <target name="client1">
+   <java classname="Client">
+       <classpath location="${build}"/>
+   </java>
+  </target>
+  <target name="server1">
+   <java classname="Server">
+       <classpath location="${build}"/>
+   </java>
+  </target>
+  <target name="run" description="incomplete, should run clients and servers async"
+    depends="server1, client1" />
+
 </project>
