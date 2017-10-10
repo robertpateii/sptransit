@@ -3,8 +3,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.net.*;
 import java.io.*;
-import java.util.HashSet;
-import java.util.Set;
 
 public class Server {
 
@@ -78,6 +76,7 @@ public class Server {
         try {
             listener = new ServerSocket(port);
             while ((pipe = listener.accept()) != null) {
+                //todo make this multi threaded
                 handleConnection(pipe);
             }
             listener.close(); // not needed since while is forever?
@@ -87,7 +86,41 @@ public class Server {
     }
 
     private void handleConnection(Socket pipe) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //read message
+        try {
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(pipe.getInputStream()));
+            //assuming single line messages
+            String message = in.readLine();
+
+            //get the command
+            String command = message.split(" ")[0];
+
+            switch(command)
+            {
+                //client commands
+                case "reserve":
+                case "bookSeat":
+                case "search":
+                case "delete":
+                    requestCriticalSection(message,pipe);
+                    break;
+                //server commands
+                case "requestCS":
+                    onReceiveRequest();
+                    break;
+                case "ack":
+                    onReceiveAck();
+                    break;
+                case "release":
+                    onReceiveRelease();
+                    break;
+                //todo add code to handle the recovery messages
+            }
+        } catch (IOException e) {
+            System.err.print(e);
+        }
+
         // add client to client list
         // add server to server list
         // handle the content of the connection?
@@ -102,7 +135,7 @@ public class Server {
                     new InputStreamReader(pipe.getInputStream()));
             String command = in.readLine();
             // if command is a search then return and close
-            requestCriticalSection();
+            requestCriticalSection(message, pipe);
             // put command into queue with the pipe
         } catch (IOException e) {
             System.err.print(e);
@@ -143,7 +176,7 @@ public class Server {
     }
 
 
-    private void requestCriticalSection() {
+    private void requestCriticalSection(String message, Socket pipe) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
