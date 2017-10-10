@@ -8,7 +8,7 @@
     HW2 Build File
   </description>
   <!-- set global properties for this build -->
-  <property name="src" location="."/>
+  <property name="src" location="paterw_stc826"/>
   <property name="build" location="build"/>
 
   <target name="init">
