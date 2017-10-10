@@ -1,13 +1,12 @@
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.net.*;
+import java.net.InetSocketAddress;
 
 public class Client {
   static Socket currentServer;
   static ArrayList<InetSocketAddress> servers;
   public static void main (String[] args) {
-
     Scanner sc = new Scanner(System.in);
     int numServer = sc.nextInt();
     servers = new ArrayList<>();

@@ -16,13 +16,13 @@ auxiliary.show.customizer.message=<message>
             <properties/>
             <folders>
                 <source-folder>
-                    <label>HW2</label>
-                    <location>.</location>
+                    <label>source</label>
+                    <type>java</type>
+                    <location>paterw_stc826</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
-                    <label>Source Packages</label>
-                    <type>java</type>
+                    <label>HW2</label>
                     <location>.</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
@@ -45,8 +45,8 @@ auxiliary.show.customizer.message=<message>
             <view>
                 <items>
                     <source-folder style="packages">
-                        <label>Source Packages</label>
-                        <location>.</location>
+                        <label>source</label>
+                        <location>paterw_stc826</location>
                     </source-folder>
                     <source-file>
                         <location>build.xml</location>
@@ -63,7 +63,7 @@ auxiliary.show.customizer.message=<message>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/4">
             <compilation-unit>
-                <package-root>.</package-root>
+                <package-root>paterw_stc826</package-root>
                 <source-level>1.8</source-level>
             </compilation-unit>
         </java-data>
