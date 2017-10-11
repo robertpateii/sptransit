@@ -56,6 +56,7 @@ public class Server {
         RecoverState(); // if no other servers up, use empty seat array
         OpenConnection(myAddress.getPort());
     }
+
     private void StartHeartbeat() {
         throw new UnsupportedOperationException("Not supported yet.");
         /*	1. Start heartbeat to all servers in list
@@ -64,6 +65,7 @@ public class Server {
             prevents us from sending other messages to dead servers
         */
     }
+
     private void RecoverState() {
         throw new UnsupportedOperationException("Not supported yet.");
         // if no other server, proceed w/ empty seat array
@@ -75,7 +77,6 @@ public class Server {
         ssee methods we made for this
     */
     }
-
 
     private void OpenConnection(int port) {
         ServerSocket listener;
@@ -114,7 +115,7 @@ public class Server {
                     break;
                 //server commands
                 case "requestCS":
-                    onReceiveRequest();
+                    onReceiveRequest(message,pipe);
                     break;
                 case "ack":
                     onReceiveAck();
@@ -168,7 +169,6 @@ public class Server {
         pipe.close();
     }
 
-
     private void requestCriticalSection(String message, Socket pipe) {
         //sends requests to all the servers in the list
         for(int i = 0;i<servers.size();i++)
@@ -198,14 +198,12 @@ public class Server {
             // enterCriticalSection
             // }
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-
     }
 
     private void onReceiveRelease() {
         // check if we're the top
         // if so enterCriticalSection
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-
     }
 
     private void enterCriticalSection() {
