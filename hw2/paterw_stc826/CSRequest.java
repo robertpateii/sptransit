@@ -1,21 +1,22 @@
-import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class CSRequest {
-    private int _timeStamp;
-    private int _pid;
+    private Timestamp _timeStamp; // includes pid unique to each server
     private Socket _clientSocket;
     private String _command;
 
-    public  CSRequest(int pid, Socket clientSocket, int timeStamp, String command)
+    public static CSRequest Parse(String message, Socket pipe) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public  CSRequest(Socket clientSocket, Timestamp timeStamp, String command)
     {
-        _pid=pid;
         _clientSocket = clientSocket;
         _timeStamp = timeStamp;
         _command = command;
     }
 
-   public  int get_timeStamp(){
+   public Timestamp get_timeStamp(){
         return _timeStamp;
    }
 
@@ -25,9 +26,5 @@ public class CSRequest {
 
     public String get_command() {
         return _command;
-    }
-
-    public int get_pid(){
-       return _pid;
     }
 }

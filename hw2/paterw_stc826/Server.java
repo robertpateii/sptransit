@@ -14,19 +14,8 @@ public class Server {
     private ArrayList<InetSocketAddress> servers;
     private HashSet<Socket> serverSockets; // kept up to date by heartbeat, used by lamport algorithm
     private InetSocketAddress myAddress; // ??do we need this or an index?
-    private ArrayList<CSRequest> csRquestQueue;
-    private int logicalClock = 0;
-    private int numAcks = 0;
     private int myID=0;
-    /*LAMPORTS MUTEX */
-    /* data structure for queue:
-        int ts; // logical clock's timestamp
-        int pid; // process id, used to break timestamp ties? see https://en.wikipedia.org/wiki/Lamport_timestamps#Considerations
-        String command;
-        Socket pipe;
-    */
-    // numAcks
-    // logical clock stuff?! don't forget about his implementations on github
+    private Mutex mutex;
 
     public static void main(String[] args) {
         Server thisServer = new Server();
@@ -51,7 +40,7 @@ public class Server {
             thisServer.inputServers.add(new InetSocketAddress(host, port));
         }
         thisServer.myAddress = thisServer.servers.get(thisServer.myID - 1); // Server ID is 1-indexed
-        thisServer.csRquestQueue =new ArrayList<CSRequest>();
+        thisServer.mutex = new Mutex(thisServer.myID, thisServer.inputServers.size());
         thisServer.go();
     }
 
@@ -141,17 +130,17 @@ public class Server {
                 case "bookSeat":
                 case "search":
                 case "delete":
-                    requestCriticalSection(message,pipe);
+                    mutex.RequestCS(message,pipe);
                     break;
                 //server commands
                 case "requestCS":
-                    onReceiveRequest(message,pipe);
+                    mutex.OnReceiveRequest(message,pipe);
                     break;
                 case "ack":
-                    onReceiveAck();
+                    mutex.OnReceiveAck();
                     break;
                 case "release":
-                    onReceiveRelease();
+                    mutex.OnReceiveRelease();
                     break;
                 case "heartbeat":
                     onRecieveHeartbeat(pipe);
@@ -201,21 +190,6 @@ public class Server {
         pipe.close();
     }
 
-    private void requestCriticalSection(String message, Socket pipe) {
-        //sends requests to all the servers in the list
-        for(int i = 0;i<servers.size();i++)
-        {
-            sendMessage(message + " "+(logicalClock),servers.get(i));
-        }
-        numAcks = 0;
-        csRquestQueue.add(new CSRequest(
-                this.myID,
-                pipe,
-                logicalClock,
-                message));
-
-    }
-
     private void sendMessage(String msg, Socket server) {
     }
 
@@ -236,36 +210,7 @@ public class Server {
         }
     }
 
-    private void onReceiveRequest() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private void onReceiveAck() {
-        // numacks += 1;
-        // if numacks = N - 1 and my request is smallest in q {
-            // enterCriticalSection
-            // }
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private void onReceiveRelease() {
-        // check if we're the top
-        // if so enterCriticalSection
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private void enterCriticalSection() {
-        release();
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private void release() {
-
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     private void onRecieveHeartbeat(Socket pipe) {
-        sendMessage
     }
 
     private void sendConnect() {
