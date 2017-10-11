@@ -3,11 +3,11 @@ import java.net.*;
 
 public class Mutex {
 	private LamportClock c;
-    private Queue<CSRequest> q; // timestamp, socket, and command
+    private PriorityQueue<CSRequest> q; // timestamp, socket, and command
     private int numAcks;
     private int myId;
 
-    public Mutex(int serverId, int expectedServers) {
+    public Mutex(int serverId, int expectedServers, ReservationMgr resMgr) {
         c = new LamportClock();
 		q = new PriorityQueue<>(
                 expectedServers,
@@ -24,11 +24,13 @@ public class Mutex {
         myId = serverId;
     }
 
-    public Mutex (int serverId, int expectedServers, PriorityQueue<CSRequest> existing) {
-        c = new LamportClock();
-        q = existing;
-        numAcks = 0;
-        myId = serverId;
+    public Mutex (int serverId, int expectedServers, 
+            ReservationMgr resMgr, Queue<CSRequest> existing) {
+
+        this(serverId, expectedServers, resMgr);
+        for (CSRequest req : existing) {
+            q.offer(req);
+        }
     }
 
 	public void RequestCS(String command, Socket pipe) {

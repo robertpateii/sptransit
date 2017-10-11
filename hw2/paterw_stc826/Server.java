@@ -1,97 +1,66 @@
-
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 import java.net.*;
 import java.io.*;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Server {
 
-    private ArrayList<String> seats; // aka seat table
-    private ArrayList<InetSocketAddress> inputServers; // used by recovery/heartbeat
     private ArrayList<InetSocketAddress> servers;
-    private HashSet<Socket> serverSockets; // kept up to date by heartbeat, used by lamport algorithm
-    private InetSocketAddress myAddress; // ??do we need this or an index?
-    private int myID=0;
+    protected final HashSet<Socket> serverSockets; // used by heartbeat and lamport
+    protected final InetSocketAddress myAddress; // ??do we need this or an index?
+    private final int myID;
     private Mutex mutex;
+    private ReservationMgr resMgr;
+    private Heartbeat hBeat;
+    private Recovery recovery;
+    private final boolean acceptingClientConnections;
+    private final ArrayList<InetSocketAddress> inputServers;
 
     public static void main(String[] args) {
-        Server thisServer = new Server();
-
+        System.out.println("Scanning inputs for server"); 
         Scanner sc = new Scanner(System.in);
-        thisServer.myID = sc.nextInt();
+        int id = sc.nextInt();
         int numServer = sc.nextInt();
-        int numSeat = sc.nextInt();
-        thisServer.inputServers = new ArrayList<>();
-        /* index is the seat number, string is the reserved name,
-            null is not reserved */
-        thisServer.seats = new ArrayList<>(numSeat);
-
+        int numSeats = sc.nextInt();
+        ArrayList<InetSocketAddress> inputServers = new ArrayList<>();
         for (int i = 0; i < numServer; i++) {
             //skip my address from the list
-            if(i==thisServer.myID-1)
+            if(i == id - 1)
                 continue;
             String temp = sc.next();
             int spacerIndex = temp.indexOf(":");
             String host = temp.substring(0, spacerIndex);
             int port = Integer.parseInt(temp.substring(spacerIndex + 1));
-            thisServer.inputServers.add(new InetSocketAddress(host, port));
+            inputServers.add(new InetSocketAddress(host, port));
         }
-        thisServer.myAddress = thisServer.servers.get(thisServer.myID - 1); // Server ID is 1-indexed
-        thisServer.mutex = new Mutex(thisServer.myID, thisServer.inputServers.size());
-        thisServer.go();
+
+        System.out.println("Starting Reservation Server ..."); 
+        Server thisServer = new Server(id, numSeats, inputServers);
     }
 
-    private void go() {
-        StartHeartbeat(); // heartbeat prunes dead servers
-        RecoverState(); // if no other servers up, use empty seat array
-        OpenConnection(myAddress.getPort());
-    }
-
-    private void StartHeartbeat() {
-        // Create sockets for all the server addresses that work
-        for (InetSocketAddress address : servers) {
-            if (address.equals(myAddress)) continue;
-            Socket s = new Socket();
-            try {
-                s.connect(address, 100);
-            } catch (IOException ex) {
-                // do nothing, only add good connections to serverSockets
-            }
-            if (!serverSockets.add(s)) {
-                System.err.println("ERROR: Socktet already in the set.");
-            }
+    public Server(int id, int numSeats, ArrayList<InetSocketAddress> inputServers) {
+        myID = id;
+        System.out.println("ID: " + myID);
+        this.inputServers = inputServers;
+        serverSockets = new HashSet<>();
+        myAddress = inputServers.get(myID - 1); // Server ID is 1-indexed
+        OpenConnection(myAddress.getPort()); // heartbeat and recovery need connections
+        hBeat = new Heartbeat(inputServers, this); // prune and setup hbeat
+        recovery = new Recovery(this);
+        if (recovery.wasSuccessful) {
+            resMgr = new ReservationMgr(recovery.seatList);
+            mutex = new Mutex(myID, inputServers.size(), resMgr, recovery.pendingQueue);
+        } else {
+            resMgr = new ReservationMgr(numSeats);
+            mutex = new Mutex(myID, inputServers.size(), resMgr);
         }
-        maintainHeartbeat();
+        // we're full recovered now, begin accepting clients
+        acceptingClientConnections = true;
     }
 
-    private void maintainHeartbeat() {
-        for (Socket s : serverSockets) {
-            // send heartbeat message
-        }
-            
-        /*	1. Start heartbeat to all servers in list
-            2. Remove dead servers
-            assume 1 and 2 is continuous!
-            prevents us from sending other messages to dead servers
-        */
-        
-    }
-
-
-
-    private void RecoverState() {
-        throw new UnsupportedOperationException("Not supported yet.");
-        // if no other server, proceed w/ empty seat array
-    /*  3. send Connect(inetaddress/port) to all servers;
-        4. Other servers add you to their list
-        5. Other servers send their seat table and queue
-        6. Wait for seat table and queue from all living servers
-        Use seat table/queue with the latest timestamp, beats problem A
-        ssee methods we made for this
-    */
+    private boolean isServer(Socket pipe) {
+        // TODO: test that the implicit type conversion works
+        InetSocketAddress remote = (InetSocketAddress)pipe.getRemoteSocketAddress();
+        return inputServers.contains(remote);
     }
 
     private void OpenConnection(int port) {
@@ -101,9 +70,17 @@ public class Server {
             listener = new ServerSocket(port);
             while ((pipe = listener.accept()) != null) {
                 //todo make this multi threaded
-                handleConnection(pipe);
+                if (acceptingClientConnections) {
+                    handleConnection(pipe);
+                } else if (isServer(pipe)) {
+                    handleConnection(pipe);
+                } else {
+                    // pipe is a client, but we haven't finished recovery yet
+                    // don't read its input, close it so it tries another server
+                    pipe.close();
+                }
             }
-            listener.close(); // not needed since while is forever?
+            listener.close(); // redundant since while is forever?
         } catch (IOException ex) {
             System.err.print(ex);
         }
@@ -143,8 +120,11 @@ public class Server {
                     mutex.OnReceiveRelease();
                     break;
                 case "heartbeat":
-                    onRecieveHeartbeat(pipe);
-                //todo add code to handle the recovery messages
+                    hBeat.onRecieveHeartbeat(pipe);
+                case "connect":
+                    recovery.OnReceiveConnect();
+                case "recover":
+                    recovery.OnReceiveRecoveryState();
             }
         } catch (IOException e) {
             System.err.print(e);
@@ -158,30 +138,9 @@ public class Server {
         // pipe.close() at some point??!
     }
 
-    // for changes from other servers
-    private String handleCommand(String command) {
-        command = command.trim().toLowerCase();
-        String[] options = command.split(" ");
-        String commandType = options[0];
-        String response;
-        switch (commandType) {
-            case "reserve":
-                response = reserve(options);
-            case "bookSeat":
-                response = bookSeat(options);
-            case "search":
-                response = search(options);
-            case "delete":
-                response = delete(options);
-            default:
-                response = "Invalid command type: " + commandType;
-        }
-        return response;
-    }
-    
     // for our clients
     private void handleCommand(String command, Socket pipe) throws IOException {
-        String response = handleCommand(command);
+        String response = resMgr.HandleCommand(command);
         // pipe stuff
         PrintWriter out
                 = new PrintWriter(pipe.getOutputStream(), true);
@@ -190,14 +149,15 @@ public class Server {
         pipe.close();
     }
 
-    private void sendMessage(String msg, Socket server) {
+    protected void sendMessage(String msg, Socket server) {
     }
 
-    private void sendMessage(String msg, InetSocketAddress inetSocketAddress) {
+    protected void sendMessage(String msg, InetSocketAddress inetSocketAddress) {
         // do we need this?Should already have socket in serverSockets or...
         // maybe we need it for clients?If it stays open... we should have like
         // a list of clients?
         Socket server = new Socket();
+        sendMessage(msg, server);
         try {
             server.connect(inetSocketAddress);
             DataOutputStream pout = 
@@ -210,80 +170,4 @@ public class Server {
         }
     }
 
-    private void onRecieveHeartbeat(Socket pipe) {
-    }
-
-    private void sendConnect() {
-        // used when coming up from crash to get into others' server list
-    }
-
-    // servers send connect when coming back from crash
-    private void onRecieveConnect() {
-
-    }
-    
-    // this is what servers send back after receiving your connect message
-    private void onRecieveRecoveryState() {
-        // block until got states from all live servers
-    }
-
-    private String reserve(String[] options) {
-        String name = options[1];
-
-        if (seats.contains(name)) {
-            return "Seat already booked against the name provided";
-        }
-
-        int firstAvailableIndex = -1;
-        for (int i = 0; i < seats.size(); i++) {
-            if (seats.get(i) != null) {
-                firstAvailableIndex = i;
-                break;
-            }
-        }
-
-        if (firstAvailableIndex > -1) {
-            seats.set(firstAvailableIndex, name);
-            return "Seat assigned to you is " + firstAvailableIndex + 1;
-        } else {
-            return "Sold out - No seat available";
-        }
-    }
-
-    private String bookSeat(String[] options) {
-        String name = options[1];
-        int seatNumber = Integer.parseInt(options[2]);
-        int seatIndex = seatNumber - 1;
-
-        if (seats.contains(name)) {
-            return "Seat already booked against the name provided";
-        }
-
-        if (seats.get(seatIndex) == null) {
-            seats.set(seatIndex, name);
-            return "Seat assigned to you is " + seatNumber;
-        } else {
-            return seatNumber + " is not available";
-        }
-    }
-
-    private String search(String[] options) {
-        String name = options[1];
-
-        if (seats.contains(name)) {
-            return Integer.toString(seats.indexOf(name) + 1);
-        }
-        return "No reservation found for " + name;
-    }
-
-    private String delete(String[] options) {
-        String name = options[1];
-
-        if (seats.contains(name)) {
-            int seatIndex = seats.indexOf(name);
-            seats.set(seatIndex, null);
-            return Integer.toString(seatIndex + 1);
-        }
-        return "No reservation found for " + name;
-    }
 }
