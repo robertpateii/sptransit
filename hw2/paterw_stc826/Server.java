@@ -3,12 +3,13 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.net.*;
 import java.io.*;
+import java.util.HashSet;
 
 public class Server {
 
     private ArrayList<String> seats; // aka seat table
     private ArrayList<InetSocketAddress> servers; // used by recovery/heartbeat?
-    private ArrayList<Socket> serverSockets; // kept up to date by heartbeat, used by lamport algorithm
+    private HashSet<Socket> serverSockets; // kept up to date by heartbeat, used by lamport algorithm
     private InetSocketAddress myAddress; // ??do we need this or an index?
     private ArrayList<CSRequest> csRquestQueue;
     private int logicalClock = 0;
@@ -58,13 +59,33 @@ public class Server {
     }
 
     private void StartHeartbeat() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Create sockets for all the server addresses that work
+        for (InetSocketAddress address : servers) {
+            if (address.equals(myAddress)) continue;
+            Socket s = new Socket();
+            try {
+                s.connect(address, 100);
+            } catch (IOException ex) {
+                // do nothing, only add good connections to serverSockets
+            }
+            if (!serverSockets.add(s)) {
+                System.err.println("ERROR: Socktet already in the set.");
+            }
+        }
+        maintainHeartbeat();
+    }
+
+    private void maintainHeartbeat() {
+        for (Socket s : serverSockets)
+            
         /*	1. Start heartbeat to all servers in list
             2. Remove dead servers
             assume 1 and 2 is continuous!
             prevents us from sending other messages to dead servers
         */
+        
     }
+
 
     private void RecoverState() {
         throw new UnsupportedOperationException("Not supported yet.");
