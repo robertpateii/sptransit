@@ -1,4 +1,6 @@
 
+package reservation;
+
 import java.util.*;
 
 public class ReservationManager {
@@ -40,7 +42,7 @@ public class ReservationManager {
                 break;
             }
         }
-        
+
         if(firstAvailableIndex >-1)
         {
             seats.set(firstAvailableIndex,name);
@@ -64,7 +66,7 @@ public class ReservationManager {
         }
         else
         {
-            return seatNumber+" is not available";            
+            return seatNumber+" is not available";
         }
     }
 
@@ -80,7 +82,7 @@ public class ReservationManager {
         String name = options[1];
 
         if(seats.contains(name))
-        { 
+        {
             int number = seats.indexOf(name);
             seats.set(number,null);
             return Integer.toString(number);

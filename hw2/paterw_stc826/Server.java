@@ -1,4 +1,6 @@
 
+package reservation;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.net.*;
@@ -6,14 +8,14 @@ import java.io.*;
 
 public class Server {
 
-    private ArrayList<String> seats; // aka seat table
-    private ArrayList<InetSocketAddress> servers; // used by recovery/heartbeat?
-    private ArrayList<Socket> serverSockets; // kept up to date by heartbeat, used by lamport algorithm
-    private InetSocketAddress myAddress; // ??do we need this or an index?
+    private ArrayList<ReservationServer> servers; // used by recovery/heartbeat?
     private ArrayList<CSRequest> csRquestQueue;
+    private ArrayList<String> clientRequestQueue;
+    private ArrayList<Socket> clientSockets;
     private int logicalClock = 0;
     private int numAcks = 0;
     private int myID=0;
+
     /*LAMPORTS MUTEX */
     /* data structure for queue:
         int ts; // logical clock's timestamp
@@ -25,36 +27,42 @@ public class Server {
     // logical clock stuff?! don't forget about his implementations on github
 
     public static void main(String[] args) {
+        System.out.println("Starting Reservation Server ...");
         Server thisServer = new Server();
 
         Scanner sc = new Scanner(System.in);
         thisServer.myID = sc.nextInt();
         int numServer = sc.nextInt();
         int numSeat = sc.nextInt();
-        thisServer.servers = new ArrayList<>();
-        /* index is the seat number, string is the reserved name,
-            null is not reserved */
-        thisServer.seats = new ArrayList<>(numSeat);
 
+        System.out.println("ID:"+thisServer.myID);
+
+        //init seats
+        ReservationManager.Initialize(numSeat);
+
+        //init servers
+        thisServer.servers = new ArrayList<>();
         for (int i = 0; i < numServer; i++) {
-            //skip my address from the list
-            if(i==thisServer.myID-1)
-                continue;
             String temp = sc.next();
             int spacerIndex = temp.indexOf(":");
             String host = temp.substring(0, spacerIndex);
             int port = Integer.parseInt(temp.substring(spacerIndex + 1));
-            thisServer.servers.add(new InetSocketAddress(host, port));
+            thisServer.servers.add(new ReservationServer(i+1, new InetSocketAddress(host, port),true));
         }
-        thisServer.myAddress = thisServer.servers.get(thisServer.myID - 1); // Server ID is 1-indexed
+
+        //init the critical section queue
         thisServer.csRquestQueue =new ArrayList<CSRequest>();
+        thisServer.clientRequestQueue = new ArrayList<String>();
+        thisServer.clientSockets = new ArrayList<>();
+
+        //start the server
         thisServer.go();
     }
 
     private void go() {
-        StartHeartbeat(); // heartbeat prunes dead servers
-        RecoverState(); // if no other servers up, use empty seat array
-        OpenConnection(myAddress.getPort());
+        //StartHeartbeat(); // heartbeat prunes dead servers
+        //RecoverState(); // if no other servers up, use empty seat array
+        OpenConnection(getServerById(myID).getAddress().getPort());
     }
 
     private void StartHeartbeat() {
@@ -81,6 +89,7 @@ public class Server {
     private void OpenConnection(int port) {
         ServerSocket listener;
         Socket pipe;
+        System.out.println("Waiting for connection..");
         try {
             listener = new ServerSocket(port);
             while ((pipe = listener.accept()) != null) {
@@ -104,6 +113,8 @@ public class Server {
             //get the command
             String command = message.split(" ")[0];
 
+            System.out.println("Recieved Command : "+command);
+
             switch(command)
             {
                 //client commands
@@ -111,17 +122,21 @@ public class Server {
                 case "bookSeat":
                 case "search":
                 case "delete":
-                    requestCriticalSection(message,pipe);
+                    if(clientRequestQueue.size()==0)
+                        requestCriticalSection(message,pipe);
+                    //keep client message to ensure we handle all the requests
+                    clientRequestQueue.add(message);
+                    clientSockets.add(pipe);
                     break;
                 //server commands
                 case "requestCS":
-                    onReceiveRequest(message,pipe);
+                    onReceiveRequest(message);
                     break;
                 case "ack":
-                    onReceiveAck();
+                    onReceiveAck(message);
                     break;
                 case "release":
-                    onReceiveRelease();
+                    onReceiveRelease(message);
                     break;
                 //todo add code to handle the recovery messages
             }
@@ -138,29 +153,13 @@ public class Server {
     }
 
     // for changes from other servers
-    private String handleCommand(String command) {
-        command = command.trim().toLowerCase();
-        String[] options = command.split(" ");
-        String commandType = options[0];
-        String response;
-        switch (commandType) {
-            case "reserve":
-                response = reserve(options);
-            case "bookSeat":
-                response = bookSeat(options);
-            case "search":
-                response = search(options);
-            case "delete":
-                response = delete(options);
-            default:
-                response = "Invalid command type: " + commandType;
-        }
-        return response;
+    private String handleClientCommand(String command) {
+       return ReservationManager.HandleCommand(command);
     }
     
     // for our clients
     private void handleCommand(String command, Socket pipe) throws IOException {
-        String response = handleCommand(command);
+        String response = handleClientCommand(command);
         // pipe stuff
         PrintWriter out
                 = new PrintWriter(pipe.getOutputStream(), true);
@@ -170,54 +169,118 @@ public class Server {
     }
 
     private void requestCriticalSection(String message, Socket pipe) {
+        System.out.println("Requesting Critical Section ...");
         //sends requests to all the servers in the list
+        int ts = getLogicalClock(0);
+        csRquestQueue.add(new CSRequest(this.myID,ts));
         for(int i = 0;i<servers.size();i++)
         {
-            sendMessage(message + " "+(logicalClock),servers.get(i));
+            //don't send to myself
+            if(i==this.myID-1) continue;
+            sendMessage("requestCS "+this.myID+ " "+ts+ " "+  message,servers.get(i).getAddress());
         }
         numAcks = 0;
-        csRquestQueue.add(new CSRequest(
-                this.myID,
-                pipe,
-                logicalClock,
-                message));
-
     }
 
-    private void sendMessage(String s, InetSocketAddress inetSocketAddress) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private int getLogicalClock(int requestLogicalClock)
+    {
+        logicalClock++;
+        if(logicalClock<requestLogicalClock)
+            logicalClock = requestLogicalClock+1;
+
+        return logicalClock;
     }
 
-    private void onReceiveRequest() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private String sendMessage(String message, InetSocketAddress inetSocketAddress) {
+        try {
+            Socket server = new Socket();
+            server.connect(inetSocketAddress);
+
+            BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
+            DataOutputStream pout = new DataOutputStream(server.getOutputStream());
+
+            pout.writeBytes(message + '\n');
+            pout.flush();
+
+            String retValue = din.readLine(); // scanner next time
+            server.close();
+
+            return retValue;
+        } catch (IOException e) {
+            System.err.print(e);
+        return null;
+
+        }
     }
 
-    private void onReceiveAck() {
+    private void onReceiveRequest(String message) {
+        String[] args = message.split(" ");
+
+        int senderId = Integer.parseInt(args[1]);
+        int ts = Integer.parseInt(args[2]);
+        csRquestQueue.add(new CSRequest(senderId,ts));
+        sendMessage("Ack ",getServerById(senderId).getAddress());
+    }
+
+    private void onReceiveAck(String message) {
         // numacks += 1;
         // if numacks = N - 1 and my request is smallest in q {
             // enterCriticalSection
             // }
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        numAcks+=1;
+        if(numAcks==servers.size()-1 && getTheSmallestRequest().get_pid() == myID)
+            enterCriticalSection();
     }
 
-    private void onReceiveRelease() {
-        // check if we're the top
-        // if so enterCriticalSection
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void onReceiveRelease(String message) {
+        String[] args = message.split(" ");
+        int senderId = Integer.parseInt(args[1]);
+
+        int index = -1;
+        for(int i = 0;i<csRquestQueue.size();i++)
+            if(csRquestQueue.get(i).get_pid()==senderId)
+            {
+                index = i;
+                break;
+            }
+
+        csRquestQueue.remove(index);
     }
 
     private void enterCriticalSection() {
+        //process the first client request that was queued up
+        //this is not fair
+        try
+        {
+        for(int i =0;i<clientRequestQueue.size();i++) {
+            String response = handleClientCommand(clientRequestQueue.get(i));
+            PrintWriter out
+                    = new PrintWriter(clientSockets.get(i).getOutputStream(), true);
+            out.write(response);
+            out.flush();
+            clientSockets.get(i).close();
+        }
+
+        clientRequestQueue=new ArrayList<>();
+        clientSockets=new ArrayList<>();
+
         release();
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+        } catch (IOException ex) {
+            System.err.print(ex);
+        }
     }
 
     private void release() {
-
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       for(int i = 0;i<servers.size();i++)
+       {
+           if(servers.get(i).getId()==myID) continue;
+           sendMessage("release",servers.get(i).getAddress());
+       }
     }
 
     private void onRecieveHeartbeat() {
-        
+
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -235,63 +298,29 @@ public class Server {
         // block until got states from all live servers
     }
 
-    private String reserve(String[] options) {
-        String name = options[1];
+    private ReservationServer getServerById(int id)
+    {
+        for(int i = 0;i<servers.size();i++)
+            if(servers.get(i).getId()==id)
+                return servers.get(i);
 
-        if (seats.contains(name)) {
-            return "Seat already booked against the name provided";
-        }
+        //todo throw exception here
+        return null;
+    }
 
-        int firstAvailableIndex = -1;
-        for (int i = 0; i < seats.size(); i++) {
-            if (seats.get(i) != null) {
-                firstAvailableIndex = i;
-                break;
+    private CSRequest getTheSmallestRequest()
+    {
+        int minTs = csRquestQueue.get(0).get_timeStamp();
+        CSRequest minRequest = csRquestQueue.get(0);
+        for(int i = 1 ;i<csRquestQueue.size();i++)
+        {
+            if(csRquestQueue.get(i).get_timeStamp() < minTs)
+            {
+                minTs = csRquestQueue.get(i).get_timeStamp();
+                minRequest = csRquestQueue.get(i);
             }
         }
 
-        if (firstAvailableIndex > -1) {
-            seats.set(firstAvailableIndex, name);
-            return "Seat assigned to you is " + firstAvailableIndex + 1;
-        } else {
-            return "Sold out - No seat available";
-        }
-    }
-
-    private String bookSeat(String[] options) {
-        String name = options[1];
-        int seatNumber = Integer.parseInt(options[2]);
-        int seatIndex = seatNumber - 1;
-
-        if (seats.contains(name)) {
-            return "Seat already booked against the name provided";
-        }
-
-        if (seats.get(seatIndex) == null) {
-            seats.set(seatIndex, name);
-            return "Seat assigned to you is " + seatNumber;
-        } else {
-            return seatNumber + " is not available";
-        }
-    }
-
-    private String search(String[] options) {
-        String name = options[1];
-
-        if (seats.contains(name)) {
-            return Integer.toString(seats.indexOf(name) + 1);
-        }
-        return "No reservation found for " + name;
-    }
-
-    private String delete(String[] options) {
-        String name = options[1];
-
-        if (seats.contains(name)) {
-            int seatIndex = seats.indexOf(name);
-            seats.set(seatIndex, null);
-            return Integer.toString(seatIndex + 1);
-        }
-        return "No reservation found for " + name;
+        return minRequest;
     }
 }
