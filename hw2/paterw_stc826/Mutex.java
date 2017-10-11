@@ -80,15 +80,16 @@ public class Mutex {
         */
     }
 
-
+    /*
     private void onReceiveRequestSamTuesday(String message) {
         String[] args = message.split(" ");
 
         int senderId = Integer.parseInt(args[1]);
         int ts = Integer.parseInt(args[2]);
-        csRquestQueue.add(new CSRequest(senderId,ts));
+        q.add(new CSRequest(senderId,ts));
         sendMessage("Ack ",getServerById(senderId).getAddress());
     }
+    */
 
     void OnReceiveAck() {
 			numAcks++;
@@ -98,6 +99,7 @@ public class Mutex {
             // }
     }
 
+    /*
     private void onReceiveAckSamTuesday(String message) {
         // numacks += 1;
         // if numacks = N - 1 and my request is smallest in q {
@@ -107,6 +109,7 @@ public class Mutex {
         if(numAcks==servers.size()-1 && getTheSmallestRequest().get_pid() == myID)
             enterCriticalSection();
     }
+    */
 
 
     void OnReceiveRelease() {
@@ -118,6 +121,7 @@ public class Mutex {
         */
     }
 
+    /*
     private void onReceiveReleaseSamTuesday(String message) {
         String[] args = message.split(" ");
         int senderId = Integer.parseInt(args[1]);
@@ -132,7 +136,7 @@ public class Mutex {
 
         csRquestQueue.remove(index);
     }
-
+    */
     public void Release() {
         /*
 		q.remove();
@@ -142,6 +146,7 @@ public class Mutex {
 
     }
 
+    /*
     private void releaseSamTuesday() {
        for(int i = 0;i<servers.size();i++)
        {
@@ -149,6 +154,7 @@ public class Mutex {
            sendMessage("release",servers.get(i).getAddress());
        }
     }
+    */
 
     public void EnterCriticalSection() {
         // execute the top of the q, my command?
@@ -156,6 +162,7 @@ public class Mutex {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /*
     private void enterCriticalSectionSamTuesday() {
         //process the first client request that was queued up
         //this is not fair
@@ -179,4 +186,5 @@ public class Mutex {
             System.err.print(ex);
         }
     }
+    */
 }
