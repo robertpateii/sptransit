@@ -1,10 +1,12 @@
+
 import java.util.*;
 
 public class ReservationMgr {
-    /** seats: index is the seat number, the string is the name on the reservation
-     * null value means the seat is not reserved
-     * The methods for the commands handle incrementing the seat index by one for
-     * the users.
+
+    /**
+     * seats: index is the seat number, the string is the name on the
+     * reservation null value means the seat is not reserved The methods for the
+     * commands handle incrementing the seat index by one for the users.
      */
     final ArrayList<String> seats;
 
@@ -15,7 +17,7 @@ public class ReservationMgr {
     public ReservationMgr(ArrayList<String> recoveredSeatList) {
         seats = recoveredSeatList;
     }
-    
+
     public String HandleCommand(String command) {
         command = command.trim().toLowerCase();
         String[] options = command.split(" ");

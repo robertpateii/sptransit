@@ -1,3 +1,4 @@
+
 import java.util.*;
 import java.net.*;
 import java.io.*;
@@ -26,7 +27,7 @@ public class Server {
         for (int i = 0; i < numServer; i++) {
             String temp = sc.next();
             //skip my address from the list
-            if(i == id - 1) {
+            if (i == id - 1) {
                 System.out.println("My Address: " + temp);
             } else {
                 System.out.println("Other Address: " + temp);
@@ -47,8 +48,8 @@ public class Server {
         serverSockets = new HashSet<>();
         myAddress = inputServers.get(myID - 1); // Server ID is 1-indexed
         int myPort = myAddress.getPort();
-        System.out.println("Opening connections for servers from ID: " + myID +
-                "and port: " + myPort);
+        System.out.println("Opening connections for servers from ID: " + myID
+                + "and port: " + myPort);
         OpenConnection(myPort); // heartbeat and recovery need connections
         System.out.println("Starting heartbeat");
         hBeat = new Heartbeat(inputServers, this); // prune and setup hbeat
@@ -70,7 +71,7 @@ public class Server {
 
     private boolean isServer(Socket pipe) {
         // TODO: test that the implicit type conversion works
-        InetSocketAddress remote = (InetSocketAddress)pipe.getRemoteSocketAddress();
+        InetSocketAddress remote = (InetSocketAddress) pipe.getRemoteSocketAddress();
         return inputServers.contains(remote);
     }
 
@@ -104,7 +105,7 @@ public class Server {
             1. one line for one message
             2. first word is the command
             3. Command separated by space from rest of message
-        */
+         */
         try {
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(pipe.getInputStream()));
@@ -115,8 +116,7 @@ public class Server {
             String command = message.split(" ")[0];
             System.out.println("Recieved Command : " + command);
 
-            switch(command)
-            {
+            switch (command) {
                 //client commands
                 case "reserve":
                 case "bookSeat":
@@ -128,12 +128,12 @@ public class Server {
                     //keep client message to ensure we handle all the requests
                     clientRequestQueue.add(message);
                     clientSockets.add(pipe);
-                    */
-                    mutex.RequestCS(message,pipe);
+                     */
+                    mutex.RequestCS(message, pipe);
                     break;
                 //server commands
                 case "requestCS":
-                    mutex.OnReceiveRequest(message,pipe);
+                    mutex.OnReceiveRequest(message, pipe);
                     break;
                 case "ack":
                     mutex.OnReceiveAck();
@@ -181,8 +181,8 @@ public class Server {
         Socket server = new Socket();
         try {
             server.connect(inetSocketAddress);
-            DataOutputStream pout =
-                    new DataOutputStream(server.getOutputStream());
+            DataOutputStream pout
+                    = new DataOutputStream(server.getOutputStream());
             pout.writeBytes(msg + '\n');
             pout.flush();
             server.close();
@@ -209,7 +209,7 @@ public class Server {
             return retValue;
         } catch (IOException e) {
             System.err.print(e);
-        return null;
+            return null;
 
         }
     }

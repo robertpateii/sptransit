@@ -1,30 +1,32 @@
+
 import java.util.*;
 import java.net.*;
 
 public class Mutex {
-	private LamportClock c;
+
+    private LamportClock c;
     private PriorityQueue<CSRequest> q; // timestamp, socket, and command
     private int numAcks;
     private int myId;
 
     public Mutex(int serverId, int expectedServers, ReservationMgr resMgr) {
         c = new LamportClock();
-		q = new PriorityQueue<>(
+        q = new PriorityQueue<>(
                 expectedServers,
                 new Comparator<CSRequest>() {
-                    public int compare(CSRequest a, CSRequest b) {
-                        return Timestamp.compare(
-                                a.get_timeStamp(),
-                                b.get_timeStamp()
-                        );
-                    }
-                }
+            public int compare(CSRequest a, CSRequest b) {
+                return Timestamp.compare(
+                        a.get_timeStamp(),
+                        b.get_timeStamp()
+                );
+            }
+        }
         );
         numAcks = 0;
         myId = serverId;
     }
 
-    public Mutex (int serverId, int expectedServers, 
+    public Mutex(int serverId, int expectedServers,
             ReservationMgr resMgr, Queue<CSRequest> existing) {
 
         this(serverId, expectedServers, resMgr);
@@ -33,8 +35,8 @@ public class Mutex {
         }
     }
 
-	public void RequestCS(String command, Socket pipe) {
-		c.tick();
+    public void RequestCS(String command, Socket pipe) {
+        c.tick();
         System.out.println("Requesting Critical Section ...");
         //sends requests to all the servers in the list
         /* sam tuesday stuff:
@@ -47,7 +49,7 @@ public class Mutex {
             sendMessage("requestCS "+this.myID+ " "+ts+ " "+  message,servers.get(i).getAddress());
         }
         numAcks = 0;
-        */
+         */
         Timestamp ts = new Timestamp(c.getValue(), myId);
         CSRequest req = new CSRequest(pipe, ts, command);
         /* TODO:send req to all other servers
@@ -56,9 +58,9 @@ public class Mutex {
         {
             sendMessage(message + " "+(logicalClock),servers.get(i));
         }
-        */
-		q.add(req);
-		numAcks = 0;
+         */
+        q.add(req);
+        numAcks = 0;
         /*
         public synchronized void requestCS() {
             c.tick();
@@ -68,7 +70,7 @@ public class Mutex {
             while ((q.peek().pid != myId) || (numAcks < n-1))
                 myWait();
         } */
-	}
+    }
 
     void OnReceiveRequest(String message, Socket pipe) {
         CSRequest req = CSRequest.Parse(message, pipe);
@@ -77,7 +79,7 @@ public class Mutex {
 		c.receiveAction(src, timeStamp);
         q.add(new Timestamp(timeStamp, src));
         sendMsg(src, "ack",c.getValue());
-        */
+         */
     }
 
     /*
@@ -89,14 +91,13 @@ public class Mutex {
         q.add(new CSRequest(senderId,ts));
         sendMessage("Ack ",getServerById(senderId).getAddress());
     }
-    */
-
+     */
     void OnReceiveAck() {
-			numAcks++;
+        numAcks++;
         // numacks += 1;
         // if numacks = N - 1 and my request is smallest in q {
-            // enterCriticalSection
-            // }
+        // enterCriticalSection
+        // }
     }
 
     /*
@@ -109,16 +110,14 @@ public class Mutex {
         if(numAcks==servers.size()-1 && getTheSmallestRequest().get_pid() == myID)
             enterCriticalSection();
     }
-    */
-
-
+     */
     void OnReceiveRelease() {
         /*
-        Iterator<Timestamp> it =  q.iterator();			    
+        Iterator<Timestamp> it =  q.iterator();
         while (it.hasNext()){
             if (it.next().getPid() == src) it.remove();
         }
-        */
+         */
     }
 
     /*
@@ -136,13 +135,13 @@ public class Mutex {
 
         csRquestQueue.remove(index);
     }
-    */
+     */
     public void Release() {
         /*
 		q.remove();
 		sendMsg(neighbors, "release", c.getValue());
 
-        */
+         */
 
     }
 
@@ -154,8 +153,7 @@ public class Mutex {
            sendMessage("release",servers.get(i).getAddress());
        }
     }
-    */
-
+     */
     public void EnterCriticalSection() {
         // execute the top of the q, my command?
         Release();
@@ -186,5 +184,5 @@ public class Mutex {
             System.err.print(ex);
         }
     }
-    */
+     */
 }
