@@ -4,42 +4,42 @@
     C:\Program Files\NetBeans 8.0.2\extide\ant\bin
 -->
 <project name="HW2" default="dist" basedir=".">
-  <description>
-    HW2 Build File
-  </description>
-  <!-- set global properties for this build -->
-  <property name="src" location="paterw_stc826"/>
-  <property name="build" location="build"/>
+    <description>
+        HW2 Build File
+    </description>
+    <!-- set global properties for this build -->
+    <property name="src" location="paterw_stc826"/>
+    <property name="build" location="build"/>
 
-  <target name="init">
-    <!-- Create the time stamp -->
-    <tstamp/>
-    <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${build}"/>
-  </target>
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build}"/>
+    </target>
 
-  <target name="compile" depends="init"
-        description="compile the source">
-    <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}" includeantruntime="false" />
-  </target>
+    <target name="compile" depends="init"
+            description="compile the source">
+        <!-- Compile the java code from ${src} into ${build} -->
+        <javac srcdir="${src}" destdir="${build}" includeantruntime="false" />
+    </target>
 
-  <target name="clean"
-        description="clean up">
-    <!-- Delete the ${build} and ${dist} directory trees -->
-    <delete dir="${build}"/>
-  </target>
-  <target name="client1">
-   <java classname="Client">
-       <classpath location="${build}"/>
-   </java>
-  </target>
-  <target name="server1">
-   <java classname="Server">
-       <classpath location="${build}"/>
-   </java>
-  </target>
-  <target name="run" description="incomplete, should run clients and servers async"
-    depends="server1, client1" />
+    <target name="clean"
+            description="clean up">
+        <!-- Delete the ${build} and ${dist} directory trees -->
+        <delete dir="${build}"/>
+    </target>
+    <target name="client1">
+        <java classname="Client">
+            <classpath location="${build}"/>
+        </java>
+    </target>
+    <target name="server1">
+        <java classname="Server">
+            <classpath location="${build}"/>
+        </java>
+    </target>
+    <target name="run" description="incomplete, should run clients and servers async"
+            depends="server1, client1" />
 
 </project>
