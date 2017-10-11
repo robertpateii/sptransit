@@ -10,12 +10,15 @@ public class Client {
     static ArrayList<InetSocketAddress> servers;
 
     public static void main(String[] args) {
+        System.out.println("Scanning client input files.");
         Scanner sc = new Scanner(System.in);
         int numServer = sc.nextInt();
+        System.out.println("numServer: " + numServer);
         servers = new ArrayList<>();
 
         for (int i = 0; i < numServer; i++) {
             String temp = sc.next();
+            System.out.println("server: " + temp);
             int spacerIndex = temp.indexOf(":");
             String host = temp.substring(0, spacerIndex);
             int port = Integer.parseInt(temp.substring(spacerIndex + 1));
@@ -29,6 +32,7 @@ public class Client {
 
         while (sc.hasNextLine()) {
             String cmd = sc.nextLine();
+            System.out.println("cmd: " + cmd);
             String[] tokens = cmd.split(" ");
 
             // TODO: send appropriate command to the server and display the
@@ -50,7 +54,6 @@ public class Client {
     }
 
     private static boolean connectToServer() {
-        return false;
         // for each server in servers
         // open socket new Socket(address.getAddress, address.getPort
         // if success, exit loop
@@ -58,6 +61,7 @@ public class Client {
         // close on error
         // return false if all servers fail
         // don't forget to close at end of main too
+        return false;
     }
 
 }

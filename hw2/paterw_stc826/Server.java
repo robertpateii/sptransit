@@ -17,7 +17,7 @@ public class Server {
     private final ArrayList<InetSocketAddress> inputServers;
 
     public static void main(String[] args) {
-        System.out.println("Scanning server input files.r");
+        System.out.println("Scanning server input files.");
         Scanner sc = new Scanner(System.in);
         int id = sc.nextInt();
         int numServer = sc.nextInt();
@@ -49,7 +49,7 @@ public class Server {
         myAddress = inputServers.get(myID - 1); // Server ID is 1-indexed
         int myPort = myAddress.getPort();
         System.out.println("Opening connections for servers from ID: " + myID
-                + "and port: " + myPort);
+                + " and port: " + myPort);
         OpenConnection(myPort); // heartbeat and recovery need connections
         System.out.println("Starting heartbeat");
         hBeat = new Heartbeat(inputServers, this); // prune and setup hbeat

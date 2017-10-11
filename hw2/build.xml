@@ -29,17 +29,56 @@
         <!-- Delete the ${build} and ${dist} directory trees -->
         <delete dir="${build}"/>
     </target>
-    <target name="client1">
-        <java classname="Client">
-            <classpath location="${build}"/>
-        </java>
-    </target>
-    <target name="server1">
-        <java classname="Server">
-            <classpath location="${build}"/>
-        </java>
-    </target>
-    <target name="run" description="incomplete, should run clients and servers async"
-            depends="server1, client1" />
 
+    <target name="run">
+        <exec dir="." executable="cmd" os="Windows 10" spawn="true">
+            <arg value="/k"/>
+            <arg value="run.cmd"/>
+        </exec>
+    </target>
 </project>
+<!-- none of this worked, i mean it worked but the windows are not accessible
+    <target name="run">
+        <exec dir="." executable="cmd" os="Windows 10" spawn="true">
+            <arg value="start cmd /k"/>
+            <arg value="java -cp build Server &lt; inputs\server2.txt"/>
+        </exec>
+        <exec dir="." executable="cmd" os="Windows 10" spawn="true">
+            <arg value="start cmd /k"/>
+            <arg value="java -cp build Client &lt; inputs\client1.txt"/>
+        </exec>
+        <exec dir="." executable="cmd" os="Windows 10" spawn="true">
+            <arg value="start cmd /k"/>
+            <arg value="java -cp build Client &lt; inputs\client2.txt"/>
+        </exec>
+    </target>
+        -->
+<!-- this worked but again can't access the clients to kill them
+    <property name="input.client1">2
+127.0.0.1:8025
+127.0.0.1:8030
+reserve Bob
+delete Mary
+search John</property>
+    <target name="client1">
+        <java classname="Client"
+            fork="true"
+            spawn="true"
+            maxmemory="128m"
+        >
+            <classpath location="${build}"/>
+        </java>
+    </target>
+    <target name="client2">
+        <java classname="Client"
+            fork="true"
+            failonerror="true"
+            maxmemory="128m"
+            input=".\inputs\client2.txt"
+        >
+            <classpath location="${build}"/>
+        </java>
+    </target>
+    <target name="run" 
+            depends="client1, client2" />
+-->
