@@ -4,11 +4,14 @@ import java.util.Scanner;
 import java.net.*;
 import java.io.*;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Server {
 
     private ArrayList<String> seats; // aka seat table
-    private ArrayList<InetSocketAddress> servers; // used by recovery/heartbeat?
+    private ArrayList<InetSocketAddress> inputServers; // used by recovery/heartbeat
+    private ArrayList<InetSocketAddress> servers;
     private HashSet<Socket> serverSockets; // kept up to date by heartbeat, used by lamport algorithm
     private InetSocketAddress myAddress; // ??do we need this or an index?
     private ArrayList<CSRequest> csRquestQueue;
@@ -32,7 +35,7 @@ public class Server {
         thisServer.myID = sc.nextInt();
         int numServer = sc.nextInt();
         int numSeat = sc.nextInt();
-        thisServer.servers = new ArrayList<>();
+        thisServer.inputServers = new ArrayList<>();
         /* index is the seat number, string is the reserved name,
             null is not reserved */
         thisServer.seats = new ArrayList<>(numSeat);
@@ -45,7 +48,7 @@ public class Server {
             int spacerIndex = temp.indexOf(":");
             String host = temp.substring(0, spacerIndex);
             int port = Integer.parseInt(temp.substring(spacerIndex + 1));
-            thisServer.servers.add(new InetSocketAddress(host, port));
+            thisServer.inputServers.add(new InetSocketAddress(host, port));
         }
         thisServer.myAddress = thisServer.servers.get(thisServer.myID - 1); // Server ID is 1-indexed
         thisServer.csRquestQueue =new ArrayList<CSRequest>();
@@ -76,7 +79,9 @@ public class Server {
     }
 
     private void maintainHeartbeat() {
-        for (Socket s : serverSockets)
+        for (Socket s : serverSockets) {
+            // send heartbeat message
+        }
             
         /*	1. Start heartbeat to all servers in list
             2. Remove dead servers
@@ -85,6 +90,7 @@ public class Server {
         */
         
     }
+
 
 
     private void RecoverState() {
@@ -116,6 +122,9 @@ public class Server {
 
     private void handleConnection(Socket pipe) {
         //read message
+        /*assumptions: one line for one message
+            first word is the command, separated by space
+        */
         try {
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(pipe.getInputStream()));
@@ -144,6 +153,8 @@ public class Server {
                 case "release":
                     onReceiveRelease();
                     break;
+                case "heartbeat":
+                    onRecieveHeartbeat(pipe);
                 //todo add code to handle the recovery messages
             }
         } catch (IOException e) {
@@ -205,8 +216,24 @@ public class Server {
 
     }
 
-    private void sendMessage(String s, InetSocketAddress inetSocketAddress) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void sendMessage(String msg, Socket server) {
+    }
+
+    private void sendMessage(String msg, InetSocketAddress inetSocketAddress) {
+        // do we need this?Should already have socket in serverSockets or...
+        // maybe we need it for clients?If it stays open... we should have like
+        // a list of clients?
+        Socket server = new Socket();
+        try {
+            server.connect(inetSocketAddress);
+            DataOutputStream pout = 
+                    new DataOutputStream(server.getOutputStream());
+            pout.writeBytes(msg + '\n');
+            pout.flush();
+            server.close();
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
     }
 
     private void onReceiveRequest() {
@@ -237,9 +264,8 @@ public class Server {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private void onRecieveHeartbeat() {
-        
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void onRecieveHeartbeat(Socket pipe) {
+        sendMessage
     }
 
     private void sendConnect() {
