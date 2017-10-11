@@ -18,6 +18,7 @@ public class Recovery {
     }
     private void sendConnect() {
         // used when coming up from crash to get into others' server list
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     // servers send connect when coming back from crash

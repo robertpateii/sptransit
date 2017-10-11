@@ -35,6 +35,19 @@ public class Mutex {
 
 	public void RequestCS(String command, Socket pipe) {
 		c.tick();
+        System.out.println("Requesting Critical Section ...");
+        //sends requests to all the servers in the list
+        /* sam tuesday stuff:
+        int ts = getLogicalClock(0);
+        csRquestQueue.add(new CSRequest(this.myID,ts));
+        for(int i = 0;i<servers.size();i++)
+        {
+            //don't send to myself
+            if(i==this.myID-1) continue;
+            sendMessage("requestCS "+this.myID+ " "+ts+ " "+  message,servers.get(i).getAddress());
+        }
+        numAcks = 0;
+        */
         Timestamp ts = new Timestamp(c.getValue(), myId);
         CSRequest req = new CSRequest(pipe, ts, command);
         /* TODO:send req to all other servers
@@ -67,12 +80,32 @@ public class Mutex {
         */
     }
 
+
+    private void onReceiveRequestSamTuesday(String message) {
+        String[] args = message.split(" ");
+
+        int senderId = Integer.parseInt(args[1]);
+        int ts = Integer.parseInt(args[2]);
+        csRquestQueue.add(new CSRequest(senderId,ts));
+        sendMessage("Ack ",getServerById(senderId).getAddress());
+    }
+
     void OnReceiveAck() {
 			numAcks++;
         // numacks += 1;
         // if numacks = N - 1 and my request is smallest in q {
             // enterCriticalSection
             // }
+    }
+
+    private void onReceiveAckSamTuesday(String message) {
+        // numacks += 1;
+        // if numacks = N - 1 and my request is smallest in q {
+            // enterCriticalSection
+            // }
+        numAcks+=1;
+        if(numAcks==servers.size()-1 && getTheSmallestRequest().get_pid() == myID)
+            enterCriticalSection();
     }
 
 
@@ -85,6 +118,21 @@ public class Mutex {
         */
     }
 
+    private void onReceiveReleaseSamTuesday(String message) {
+        String[] args = message.split(" ");
+        int senderId = Integer.parseInt(args[1]);
+
+        int index = -1;
+        for(int i = 0;i<csRquestQueue.size();i++)
+            if(csRquestQueue.get(i).get_pid()==senderId)
+            {
+                index = i;
+                break;
+            }
+
+        csRquestQueue.remove(index);
+    }
+
     public void Release() {
         /*
 		q.remove();
@@ -94,9 +142,41 @@ public class Mutex {
 
     }
 
+    private void releaseSamTuesday() {
+       for(int i = 0;i<servers.size();i++)
+       {
+           if(servers.get(i).getId()==myID) continue;
+           sendMessage("release",servers.get(i).getAddress());
+       }
+    }
+
     public void EnterCriticalSection() {
         // execute the top of the q, my command?
         Release();
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private void enterCriticalSectionSamTuesday() {
+        //process the first client request that was queued up
+        //this is not fair
+        try
+        {
+        for(int i =0;i<clientRequestQueue.size();i++) {
+            String response = handleClientCommand(clientRequestQueue.get(i));
+            PrintWriter out
+                    = new PrintWriter(clientSockets.get(i).getOutputStream(), true);
+            out.write(response);
+            out.flush();
+            clientSockets.get(i).close();
+        }
+
+        clientRequestQueue=new ArrayList<>();
+        clientSockets=new ArrayList<>();
+
+        release();
+
+        } catch (IOException ex) {
+            System.err.print(ex);
+        }
     }
 }

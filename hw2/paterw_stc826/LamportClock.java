@@ -1,4 +1,15 @@
 public class LamportClock {
+    /* sam tuesday stuff
+    private int getLogicalClock(int requestLogicalClock)
+    {
+        logicalClock++;
+        if(logicalClock<requestLogicalClock)
+            logicalClock = requestLogicalClock+1;
+
+        return logicalClock;
+    }
+    */
+    
     int c;
     public LamportClock() {
         c = 1;

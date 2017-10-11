@@ -16,44 +16,55 @@ public class Server {
     private final ArrayList<InetSocketAddress> inputServers;
 
     public static void main(String[] args) {
-        System.out.println("Scanning inputs for server"); 
+        System.out.println("Scanning server input files.r");
         Scanner sc = new Scanner(System.in);
         int id = sc.nextInt();
         int numServer = sc.nextInt();
         int numSeats = sc.nextInt();
+        System.out.printf("My ID: %d; numServers: %d; numSeats: %d\n", id, numServer, numSeats);
         ArrayList<InetSocketAddress> inputServers = new ArrayList<>();
         for (int i = 0; i < numServer; i++) {
-            //skip my address from the list
-            if(i == id - 1)
-                continue;
             String temp = sc.next();
+            //skip my address from the list
+            if(i == id - 1) {
+                System.out.println("My Address: " + temp);
+            } else {
+                System.out.println("Other Address: " + temp);
+            }
             int spacerIndex = temp.indexOf(":");
             String host = temp.substring(0, spacerIndex);
             int port = Integer.parseInt(temp.substring(spacerIndex + 1));
             inputServers.add(new InetSocketAddress(host, port));
         }
 
-        System.out.println("Starting Reservation Server ..."); 
+        System.out.println("Creating Reservation Server ...");
         Server thisServer = new Server(id, numSeats, inputServers);
     }
 
     public Server(int id, int numSeats, ArrayList<InetSocketAddress> inputServers) {
         myID = id;
-        System.out.println("ID: " + myID);
         this.inputServers = inputServers;
         serverSockets = new HashSet<>();
         myAddress = inputServers.get(myID - 1); // Server ID is 1-indexed
-        OpenConnection(myAddress.getPort()); // heartbeat and recovery need connections
+        int myPort = myAddress.getPort();
+        System.out.println("Opening connections for servers from ID: " + myID +
+                "and port: " + myPort);
+        OpenConnection(myPort); // heartbeat and recovery need connections
+        System.out.println("Starting heartbeat");
         hBeat = new Heartbeat(inputServers, this); // prune and setup hbeat
+        System.out.println("Attempting recovery");
         recovery = new Recovery(this);
         if (recovery.wasSuccessful) {
+            System.out.println("Successful recovery, setting up ReservationMgr and Mutex");
             resMgr = new ReservationMgr(recovery.seatList);
             mutex = new Mutex(myID, inputServers.size(), resMgr, recovery.pendingQueue);
         } else {
+            System.out.println("Recovery failed! Setting up ReservationMgr and Mutex");
             resMgr = new ReservationMgr(numSeats);
             mutex = new Mutex(myID, inputServers.size(), resMgr);
         }
         // we're full recovered now, begin accepting clients
+        System.out.println("Opening connections to clients");
         acceptingClientConnections = true;
     }
 
@@ -67,6 +78,7 @@ public class Server {
         ServerSocket listener;
         Socket pipe;
         try {
+            System.out.println("Waiting for connection..");
             listener = new ServerSocket(port);
             while ((pipe = listener.accept()) != null) {
                 //todo make this multi threaded
@@ -88,8 +100,10 @@ public class Server {
 
     private void handleConnection(Socket pipe) {
         //read message
-        /*assumptions: one line for one message
-            first word is the command, separated by space
+        /* Read and parse the message. ASSUMPTIONS:
+            1. one line for one message
+            2. first word is the command
+            3. Command separated by space from rest of message
         */
         try {
             BufferedReader in = new BufferedReader(
@@ -99,6 +113,7 @@ public class Server {
 
             //get the command
             String command = message.split(" ")[0];
+            System.out.println("Recieved Command : " + command);
 
             switch(command)
             {
@@ -107,6 +122,13 @@ public class Server {
                 case "bookSeat":
                 case "search":
                 case "delete":
+                    /* sam tuesday stuff
+                    if(clientRequestQueue.size()==0)
+                        requestCriticalSection(message,pipe);
+                    //keep client message to ensure we handle all the requests
+                    clientRequestQueue.add(message);
+                    clientSockets.add(pipe);
+                    */
                     mutex.RequestCS(message,pipe);
                     break;
                 //server commands
@@ -157,16 +179,38 @@ public class Server {
         // maybe we need it for clients?If it stays open... we should have like
         // a list of clients?
         Socket server = new Socket();
-        sendMessage(msg, server);
         try {
             server.connect(inetSocketAddress);
-            DataOutputStream pout = 
+            DataOutputStream pout =
                     new DataOutputStream(server.getOutputStream());
             pout.writeBytes(msg + '\n');
             pout.flush();
             server.close();
         } catch (IOException ex) {
             System.err.println(ex);
+        }
+    }
+
+    // same tuesday night stuff, was sendMessage();
+    private String sendAndReceiveMessage(String message, InetSocketAddress inetSocketAddress) {
+        try {
+            Socket server = new Socket();
+            server.connect(inetSocketAddress);
+
+            BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
+            DataOutputStream pout = new DataOutputStream(server.getOutputStream());
+
+            pout.writeBytes(message + '\n');
+            pout.flush();
+
+            String retValue = din.readLine(); // scanner next time
+            server.close();
+
+            return retValue;
+        } catch (IOException e) {
+            System.err.print(e);
+        return null;
+
         }
     }
 

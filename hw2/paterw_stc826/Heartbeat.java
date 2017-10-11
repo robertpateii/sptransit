@@ -44,7 +44,7 @@ public class Heartbeat {
     }
 
     protected void onRecieveHeartbeat(Socket pipe) {
-
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }
