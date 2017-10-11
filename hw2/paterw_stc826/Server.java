@@ -6,10 +6,14 @@ import java.io.*;
 
 public class Server {
 
-    static ArrayList<String> seats; // aka seat table
-    static ArrayList<InetSocketAddress> servers; // used by recovery/heartbeat?
-    static ArrayList<Socket> serverSockets; // kept up to date by heartbeat, used by lamport algorithm
-    static InetSocketAddress myAddress; // ??do we need this or an index?
+    private ArrayList<String> seats; // aka seat table
+    private ArrayList<InetSocketAddress> servers; // used by recovery/heartbeat?
+    private ArrayList<Socket> serverSockets; // kept up to date by heartbeat, used by lamport algorithm
+    private InetSocketAddress myAddress; // ??do we need this or an index?
+    private ArrayList<CSRequest> csRquestQueue;
+    private int logicalClock = 0;
+    private int numAcks = 0;
+    private int myID=0;
     /*LAMPORTS MUTEX */
     /* data structure for queue:
         int ts; // logical clock's timestamp
@@ -21,26 +25,29 @@ public class Server {
     // logical clock stuff?! don't forget about his implementations on github
 
     public static void main(String[] args) {
+        Server thisServer = new Server();
 
         Scanner sc = new Scanner(System.in);
-        int myID = sc.nextInt();
+        thisServer.myID = sc.nextInt();
         int numServer = sc.nextInt();
         int numSeat = sc.nextInt();
-        servers = new ArrayList<>();
+        thisServer.servers = new ArrayList<>();
         /* index is the seat number, string is the reserved name,
             null is not reserved */
-        seats = new ArrayList<>(numSeat);
+        thisServer.seats = new ArrayList<>(numSeat);
 
         for (int i = 0; i < numServer; i++) {
+            //skip my address from the list
+            if(i==thisServer.myID-1)
+                continue;
             String temp = sc.next();
             int spacerIndex = temp.indexOf(":");
             String host = temp.substring(0, spacerIndex);
             int port = Integer.parseInt(temp.substring(spacerIndex + 1));
-            servers.add(new InetSocketAddress(host, port));
+            thisServer.servers.add(new InetSocketAddress(host, port));
         }
-        myAddress = servers.get(myID - 1); // Server ID is 1-indexed
-        
-        Server thisServer = new Server();
+        thisServer.myAddress = thisServer.servers.get(thisServer.myID - 1); // Server ID is 1-indexed
+        thisServer.csRquestQueue =new ArrayList<CSRequest>();
         thisServer.go();
     }
 
@@ -129,20 +136,6 @@ public class Server {
         // pipe.close() at some point??!
     }
 
-    private void handleClient(Socket pipe) {
-        try {
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(pipe.getInputStream()));
-            String command = in.readLine();
-            // if command is a search then return and close
-            requestCriticalSection(message, pipe);
-            // put command into queue with the pipe
-        } catch (IOException e) {
-            System.err.print(e);
-        }
-
-    }
-
     // for changes from other servers
     private String handleCommand(String command) {
         command = command.trim().toLowerCase();
@@ -177,6 +170,21 @@ public class Server {
 
 
     private void requestCriticalSection(String message, Socket pipe) {
+        //sends requests to all the servers in the list
+        for(int i = 0;i<servers.size();i++)
+        {
+            sendMessage(message + " "+(logicalClock),servers.get(i));
+        }
+        numAcks = 0;
+        csRquestQueue.add(new CSRequest(
+                this.myID,
+                pipe,
+                logicalClock,
+                message));
+
+    }
+
+    private void sendMessage(String s, InetSocketAddress inetSocketAddress) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

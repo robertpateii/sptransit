@@ -1,15 +1,16 @@
 import java.net.InetSocketAddress;
+import java.net.Socket;
 
 public class CSRequest {
     private int _timeStamp;
     private int _pid;
-    private InetSocketAddress _address;
+    private Socket _clientSocket;
     private String _command;
 
-    public  CSRequest(int pid,InetSocketAddress address,int timeStamp,String command)
+    public  CSRequest(int pid, Socket clientSocket, int timeStamp, String command)
     {
         _pid=pid;
-        _address = address;
+        _clientSocket = clientSocket;
         _timeStamp = timeStamp;
         _command = command;
     }
@@ -18,8 +19,8 @@ public class CSRequest {
         return _timeStamp;
    }
 
-    public InetSocketAddress get_address() {
-        return _address;
+    public Socket get_clientSocket() {
+        return _clientSocket;
     }
 
     public String get_command() {
