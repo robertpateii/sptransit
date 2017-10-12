@@ -13,7 +13,7 @@ public class Server {
     private ReservationMgr resMgr;
     private Heartbeat hBeat;
     private Recovery recovery;
-    private final boolean acceptingClientConnections;
+    protected boolean acceptingClientConnections;
     private final ArrayList<InetSocketAddress> inputServers;
 
     public static void main(String[] args) {
@@ -50,7 +50,6 @@ public class Server {
         int myPort = myAddress.getPort();
         System.out.println("Opening connections for servers from ID: " + myID
                 + " and port: " + myPort);
-        OpenConnection(myPort); // heartbeat and recovery need connections
         System.out.println("Starting heartbeat");
         hBeat = new Heartbeat(inputServers, this); // prune and setup hbeat
         System.out.println("Attempting recovery");
@@ -58,15 +57,16 @@ public class Server {
         if (recovery.wasSuccessful) {
             System.out.println("Successful recovery, setting up ReservationMgr and Mutex");
             resMgr = new ReservationMgr(recovery.seatList);
-            mutex = new Mutex(myID, inputServers.size(), resMgr, recovery.pendingQueue);
+            mutex = new Mutex(myID, inputServers.size(), resMgr, recovery.pendingQueue, this);
         } else {
             System.out.println("Recovery failed! Setting up ReservationMgr and Mutex");
             resMgr = new ReservationMgr(numSeats);
-            mutex = new Mutex(myID, inputServers.size(), resMgr);
+            mutex = new Mutex(myID, inputServers.size(), resMgr, this);
         }
         // we're full recovered now, begin accepting clients
         System.out.println("Opening connections to clients");
         acceptingClientConnections = true;
+        OpenConnection(myPort);
     }
 
     private boolean isServer(Socket pipe) {
@@ -82,6 +82,7 @@ public class Server {
             System.out.println("Waiting for connection..");
             listener = new ServerSocket(port);
             while ((pipe = listener.accept()) != null) {
+                System.out.println("Got Connection " + pipe.getRemoteSocketAddress().toString());
                 //todo make this multi threaded
                 if (acceptingClientConnections) {
                     handleConnection(pipe);
@@ -107,9 +108,10 @@ public class Server {
             3. Command separated by space from rest of message
          */
         try {
+            System.out.println("Entering Handle Connection"); 
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(pipe.getInputStream()));
-            //assuming single line messages
+            //assuming single line messages for everything except recovery
             String message = in.readLine();
 
             //get the command
@@ -146,6 +148,7 @@ public class Server {
                 case "connect":
                     recovery.OnReceiveConnect();
                 case "recover":
+                    // read the serialized queue and seat table somehow
                     recovery.OnReceiveRecoveryState();
             }
         } catch (IOException e) {

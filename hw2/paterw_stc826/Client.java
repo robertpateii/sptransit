@@ -23,6 +23,7 @@ public class Client {
             int port = Integer.parseInt(temp.substring(spacerIndex + 1));
             servers.add(new InetSocketAddress(host, port));
         }
+        String leftoverLineBreak = sc.nextLine();
 
         if (connectToServer() == false) {
             System.out.println("ERROR: Could not connect to any servers");
@@ -32,8 +33,8 @@ public class Client {
         while (sc.hasNextLine()) {
             String cmd = sc.nextLine();
             System.out.println("cmd: " + cmd);
-            Socket server = new Socket();
-            server.connect(servers.get(0));
+            Socket server = new Socket(servers.get(0).getAddress(), servers.get(0).getPort());
+            System.out.println("server to connect to: " + servers.get(0).getHostName() + ":" + servers.get(0).getPort());
             BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
             DataOutputStream pout = new DataOutputStream(server.getOutputStream());
 

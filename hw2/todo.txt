@@ -4,3 +4,10 @@ X Rob to put template into new folder in shared repo asap
 - Rob to read global state for q1 q2 & lamport's mutex for q3
 - Samuel to read the same
 - Meet sunday 10-11am oct 8th to finalize q1, q2, and plan q3 next steps
+
+
+- rob to commit and push
+- sam to test
+- rob to finish heartbeat
+- rob to work on recovery
+- sam to fix mutex

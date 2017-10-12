@@ -1,6 +1,7 @@
 
 import java.util.*;
 import java.net.*;
+// based on https://github.com/vijaygarg1/EE-382N-Distributed-Systems-Option-3/blob/master/Distributed-Algorithms/mutex/LamportMutex.java
 
 public class Mutex {
 
@@ -8,8 +9,9 @@ public class Mutex {
     private PriorityQueue<CSRequest> q; // timestamp, socket, and command
     private int numAcks;
     private int myId;
+    private Server parent;
 
-    public Mutex(int serverId, int expectedServers, ReservationMgr resMgr) {
+    public Mutex(int serverId, int expectedServers, ReservationMgr resMgr, Server parent) {
         c = new LamportClock();
         q = new PriorityQueue<>(
                 expectedServers,
@@ -24,12 +26,13 @@ public class Mutex {
         );
         numAcks = 0;
         myId = serverId;
+        this.parent = parent;
     }
 
     public Mutex(int serverId, int expectedServers,
-            ReservationMgr resMgr, Queue<CSRequest> existing) {
+            ReservationMgr resMgr, Queue<CSRequest> existing, Server parent) {
 
-        this(serverId, expectedServers, resMgr);
+        this(serverId, expectedServers, resMgr, parent);
         for (CSRequest req : existing) {
             q.offer(req);
         }
@@ -37,6 +40,7 @@ public class Mutex {
 
     public void RequestCS(String command, Socket pipe) {
         c.tick();
+        parent.acceptingClientConnections = false;
         System.out.println("Requesting Critical Section ...");
         //sends requests to all the servers in the list
         /* sam tuesday stuff:
@@ -142,6 +146,7 @@ public class Mutex {
 		sendMsg(neighbors, "release", c.getValue());
 
          */
+        parent.acceptingClientConnections = true;
 
     }
 
