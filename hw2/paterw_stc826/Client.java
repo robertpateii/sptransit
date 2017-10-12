@@ -1,15 +1,14 @@
 
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 import java.net.*;
-import java.net.InetSocketAddress;
+import java.io.*;
 
 public class Client {
 
     static Socket currentServer;
     static ArrayList<InetSocketAddress> servers;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         System.out.println("Scanning client input files.");
         Scanner sc = new Scanner(System.in);
         int numServer = sc.nextInt();
@@ -33,27 +32,22 @@ public class Client {
         while (sc.hasNextLine()) {
             String cmd = sc.nextLine();
             System.out.println("cmd: " + cmd);
-            String[] tokens = cmd.split(" ");
+            Socket server = new Socket();
+            server.connect(servers.get(0));
+            BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
+            DataOutputStream pout = new DataOutputStream(server.getOutputStream());
 
-            // TODO: send appropriate command to the server and display the
-            // appropriate responses form the server for each case
-            switch (tokens[0]) {
-                case "reserve":
-                    break;
-                case "bookSeat":
-                    break;
-                case "search":
-                    break;
-                case "delete":
-                    break;
-                default:
-                    System.out.println("ERROR: No such command");
-                    break;
-            }
+            pout.writeBytes(cmd + '\n');
+            pout.flush();
+
+            String retValue = din.readLine(); // scanner next time
+            System.out.println("Response: " + retValue);
+            server.close();
         }
     }
 
     private static boolean connectToServer() {
+        return true;
         // for each server in servers
         // open socket new Socket(address.getAddress, address.getPort
         // if success, exit loop
@@ -61,7 +55,6 @@ public class Client {
         // close on error
         // return false if all servers fail
         // don't forget to close at end of main too
-        return false;
     }
 
 }
