@@ -52,14 +52,21 @@ public class Mutex {
 
         Timestamp ts = new Timestamp(c.getValue(), myId);
         CSRequest req = new CSRequest(pipe, ts, command);
-        /* TODO:send req to all other servers
-        // req includes timestamp and command and client socket/pipe*/
-        parent.messageAllServers("requestCS "+ts);
         _clientCommand = command;
         _clientSocket = pipe;
 
-        q.offer(req);
-        numAcks = 0;
+
+        // req includes timestamp and command and client socket/pipe*/
+        if(parent.serverAddresses.size()> 0) {
+            parent.messageAllServers("requestCS " + ts);
+            q.offer(req);
+            numAcks = 0;
+        }
+        else {
+            //TODO : this might not work when the server is recovering
+            System.out.println("Entering Critical Section since there are no additional servers");
+            EnterCriticalSection();
+        }
     }
 
     void OnReceiveRequest(String message, Socket pipe) {
@@ -74,7 +81,7 @@ public class Mutex {
         numAcks++;
         if(numAcks == parent.serverAddresses.size()-1 && q.peek().get_timeStamp().getPid() == myId)
         {
-            System.out.println("heeeey I got the critical section from acknowledge");
+            System.out.println("critical section from acknowledge");
             EnterCriticalSection();
         }
     }
@@ -89,7 +96,7 @@ public class Mutex {
 
         if(numAcks == parent.serverAddresses.size()-1 && q.peek().get_timeStamp().getPid() == myId)
         {
-            System.out.println("heeeey I got the critical section from release");
+            System.out.println("critical section from release");
             EnterCriticalSection();
         }
     }
@@ -101,20 +108,12 @@ public class Mutex {
 
          */
         parent.acceptingClientConnections = true;
-        q.remove();
-
-        parent.messageAllServers("release "+myId);
+        if(q.size()>0) {
+            q.remove();
+            parent.messageAllServers("release " + myId);
+        }
     }
 
-    /*
-    private void releaseSamTuesday() {
-       for(int i = 0;i<servers.size();i++)
-       {
-           if(servers.get(i).getId()==myID) continue;
-           sendMessage("release",servers.get(i).getAddress());
-       }
-    }
-     */
     public void EnterCriticalSection() {
         // execute the top of the q, my command?
         String result = _resManager.HandleCommand(_clientCommand);

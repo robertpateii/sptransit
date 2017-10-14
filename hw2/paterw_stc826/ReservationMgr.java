@@ -11,12 +11,13 @@ public class ReservationMgr {
     final ArrayList<String> seats;
 
     public ReservationMgr(int numSeats) {
-        this(new ArrayList<>(numSeats));
+        seats = new ArrayList<>(numSeats);
+        for(int i= 0;i<numSeats;i++)
+            seats.add(null);
     }
 
     public ReservationMgr(ArrayList<String> recoveredSeatList) {
         seats = recoveredSeatList;
-        System.out.println("Initializatin reservatino manager with "+seats.size()+" seats!");
     }
 
     public String HandleCommand(String command) {
@@ -46,7 +47,7 @@ public class ReservationMgr {
 
         int firstAvailableIndex = -1;
         for (int i = 0; i < seats.size(); i++) {
-            if (seats.get(i) != null) {
+            if (seats.get(i) == null) {
                 firstAvailableIndex = i;
                 break;
             }
