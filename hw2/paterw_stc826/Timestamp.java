@@ -7,6 +7,12 @@ public class Timestamp {
         this.pid = pid;
     }
 
+    public Timestamp(String tsString)
+    {
+        this.pid = Integer.parseInt(tsString.split(" ")[1]);
+        this.logicalClock = Integer.parseInt(tsString.split(" ")[2]);
+    }
+
     public static int compare(Timestamp a, Timestamp b) {
 
         if (a.logicalClock > b.logicalClock) {
@@ -32,6 +38,12 @@ public class Timestamp {
     public int getPid() {
         return pid;
     }
+
+    public String toString()
+    {
+        return this.pid + " " + this.logicalClock;
+    }
+
     int logicalClock;
     int pid;
 }

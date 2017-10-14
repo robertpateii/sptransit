@@ -140,7 +140,7 @@ public class Server {
                     mutex.OnReceiveAck();
                     break;
                 case "release":
-                    mutex.OnReceiveRelease();
+                    mutex.OnReceiveRelease(message);
                     break;
                 case "heartbeat":
                     hBeat.onRecieveHeartbeat(pipe);

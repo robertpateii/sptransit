@@ -1,4 +1,6 @@
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 import java.net.*;
 // based on https://github.com/vijaygarg1/EE-382N-Distributed-Systems-Option-3/blob/master/Distributed-Algorithms/mutex/LamportMutex.java
@@ -10,27 +12,32 @@ public class Mutex {
     private int numAcks;
     private int myId;
     private Server parent;
+    private ReservationMgr _resManager;
+
+    private Socket _clientSocket;
+    private String _clientCommand;
 
     public Mutex(int serverId, int expectedServers, ReservationMgr resMgr, Server parent) {
         c = new LamportClock();
         q = new PriorityQueue<>(
                 expectedServers,
                 new Comparator<CSRequest>() {
-            public int compare(CSRequest a, CSRequest b) {
-                return Timestamp.compare(
-                        a.get_timeStamp(),
-                        b.get_timeStamp()
-                );
-            }
-        }
+                    public int compare(CSRequest a, CSRequest b) {
+                        return Timestamp.compare(
+                                a.get_timeStamp(),
+                                b.get_timeStamp()
+                        );
+                    }
+                }
         );
         numAcks = 0;
         myId = serverId;
         this.parent = parent;
+        _resManager = resMgr;
     }
 
     public Mutex(int serverId, int expectedServers,
-            ReservationMgr resMgr, Queue<CSRequest> existing, Server parent) {
+                 ReservationMgr resMgr, Queue<CSRequest> existing, Server parent) {
 
         this(serverId, expectedServers, resMgr, parent);
         for (CSRequest req : existing) {
@@ -39,107 +46,54 @@ public class Mutex {
     }
 
     public void RequestCS(String command, Socket pipe) {
+        System.out.println("Requesting Critical Section ...");
         c.tick();
         parent.acceptingClientConnections = false;
-        System.out.println("Requesting Critical Section ...");
-        //sends requests to all the servers in the list
-        /* sam tuesday stuff:
-        int ts = getLogicalClock(0);
-        csRquestQueue.add(new CSRequest(this.myID,ts));
-        for(int i = 0;i<servers.size();i++)
-        {
-            //don't send to myself
-            if(i==this.myID-1) continue;
-            sendMessage("requestCS "+this.myID+ " "+ts+ " "+  message,servers.get(i).getAddress());
-        }
-        numAcks = 0;
-         */
+
         Timestamp ts = new Timestamp(c.getValue(), myId);
         CSRequest req = new CSRequest(pipe, ts, command);
         /* TODO:send req to all other servers
-        // req includes timestamp and command and client socket/pipe
-        for(int i = 0;i<servers.size();i++)
-        {
-            sendMessage(message + " "+(logicalClock),servers.get(i));
-        }
-         */
-        q.add(req);
+        // req includes timestamp and command and client socket/pipe*/
+        parent.messageAllServers("requestCS "+ts);
+        _clientCommand = command;
+        _clientSocket = pipe;
+
+        q.offer(req);
         numAcks = 0;
-        /*
-        public synchronized void requestCS() {
-            c.tick();
-            q.add(new Timestamp(c.getValue(), myId));
-            sendMsg(neighbors, "request", c.getValue());
-            numAcks = 0;
-            while ((q.peek().pid != myId) || (numAcks < n-1))
-                myWait();
-        } */
     }
 
     void OnReceiveRequest(String message, Socket pipe) {
         CSRequest req = CSRequest.Parse(message, pipe);
-        /*
-		int ts = req.get_timeStamp();
-		c.receiveAction(src, timeStamp);
-        q.add(new Timestamp(timeStamp, src));
-        sendMsg(src, "ack",c.getValue());
-         */
+        c.receiveAction(req.get_timeStamp().getPid(),req.get_timeStamp().getLogicalClock());
+        q.add(new CSRequest(message));
+        parent.messageServer("ack",(InetSocketAddress) pipe.getLocalSocketAddress());
     }
 
-    /*
-    private void onReceiveRequestSamTuesday(String message) {
-        String[] args = message.split(" ");
-
-        int senderId = Integer.parseInt(args[1]);
-        int ts = Integer.parseInt(args[2]);
-        q.add(new CSRequest(senderId,ts));
-        sendMessage("Ack ",getServerById(senderId).getAddress());
-    }
-     */
     void OnReceiveAck() {
+        dumpQueue();
         numAcks++;
-        // numacks += 1;
-        // if numacks = N - 1 and my request is smallest in q {
-        // enterCriticalSection
-        // }
-    }
-
-    /*
-    private void onReceiveAckSamTuesday(String message) {
-        // numacks += 1;
-        // if numacks = N - 1 and my request is smallest in q {
-            // enterCriticalSection
-            // }
-        numAcks+=1;
-        if(numAcks==servers.size()-1 && getTheSmallestRequest().get_pid() == myID)
-            enterCriticalSection();
-    }
-     */
-    void OnReceiveRelease() {
-        /*
-        Iterator<Timestamp> it =  q.iterator();
-        while (it.hasNext()){
-            if (it.next().getPid() == src) it.remove();
+        if(numAcks == parent.serverAddresses.size()-1 && q.peek().get_timeStamp().getPid() == myId)
+        {
+            System.out.println("heeeey I got the critical section from acknowledge");
+            EnterCriticalSection();
         }
-         */
     }
 
-    /*
-    private void onReceiveReleaseSamTuesday(String message) {
-        String[] args = message.split(" ");
-        int senderId = Integer.parseInt(args[1]);
+    void OnReceiveRelease(String command) {
+        dumpQueue();
+        int src = Integer.parseInt(command.split(" ")[1]);
+        Iterator<CSRequest> it =  q.iterator();
+        while (it.hasNext()){
+            if (it.next().get_timeStamp().getPid() == src) it.remove();
+        }
 
-        int index = -1;
-        for(int i = 0;i<csRquestQueue.size();i++)
-            if(csRquestQueue.get(i).get_pid()==senderId)
-            {
-                index = i;
-                break;
-            }
-
-        csRquestQueue.remove(index);
+        if(numAcks == parent.serverAddresses.size()-1 && q.peek().get_timeStamp().getPid() == myId)
+        {
+            System.out.println("heeeey I got the critical section from release");
+            EnterCriticalSection();
+        }
     }
-     */
+
     public void Release() {
         /*
 		q.remove();
@@ -147,7 +101,9 @@ public class Mutex {
 
          */
         parent.acceptingClientConnections = true;
+        q.remove();
 
+        parent.messageAllServers("release "+myId);
     }
 
     /*
@@ -161,33 +117,33 @@ public class Mutex {
      */
     public void EnterCriticalSection() {
         // execute the top of the q, my command?
-        Release();
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /*
-    private void enterCriticalSectionSamTuesday() {
-        //process the first client request that was queued up
-        //this is not fair
-        try
-        {
-        for(int i =0;i<clientRequestQueue.size();i++) {
-            String response = handleClientCommand(clientRequestQueue.get(i));
-            PrintWriter out
-                    = new PrintWriter(clientSockets.get(i).getOutputStream(), true);
-            out.write(response);
+        String result = _resManager.HandleCommand(_clientCommand);
+        // pipe stuff
+        PrintWriter out
+                = null;
+        try {
+            System.out.println("got a response "+result);
+            out = new PrintWriter(_clientSocket.getOutputStream(), true);
+            out.write(result);
             out.flush();
-            clientSockets.get(i).close();
+
+            _clientSocket.close();
+            _clientSocket = null;
+            _clientCommand = null;
+            Release();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        clientRequestQueue=new ArrayList<>();
-        clientSockets=new ArrayList<>();
-
-        release();
-
-        } catch (IOException ex) {
-            System.err.print(ex);
-        }
     }
-     */
+
+    private void dumpQueue()
+    {
+        System.out.println("**********************");
+        Iterator<CSRequest> it =  q.iterator();
+        while (it.hasNext()){
+            System.out.println(it.next().get_timeStamp());
+        }
+        System.out.println("**********************");
+    }
 }

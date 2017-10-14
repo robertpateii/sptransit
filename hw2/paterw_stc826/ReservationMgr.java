@@ -16,6 +16,7 @@ public class ReservationMgr {
 
     public ReservationMgr(ArrayList<String> recoveredSeatList) {
         seats = recoveredSeatList;
+        System.out.println("Initializatin reservatino manager with "+seats.size()+" seats!");
     }
 
     public String HandleCommand(String command) {
@@ -25,7 +26,7 @@ public class ReservationMgr {
         switch (commandType) {
             case "reserve":
                 return reserve(options);
-            case "bookSeat":
+            case "bookseat":
                 return bookSeat(options);
             case "search":
                 return search(options);
@@ -67,6 +68,9 @@ public class ReservationMgr {
         if (seats.contains(name)) {
             return "Seat already booked against the name provided";
         }
+
+        if(seatIndex>= seats.size())
+            return "Invalid seat number "+seatNumber;
 
         if (seats.get(seatIndex) == null) {
             seats.set(seatIndex, name);
