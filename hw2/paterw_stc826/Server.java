@@ -172,7 +172,7 @@ public class Server {
     }
 
     private void messageServer(Socket s, String msg) throws IOException {
-        s.setSoTimeout(100);
+        s.setSoTimeout(10); // ok wait this can't be the same timeout as clients... otherwise one dead server will cause clients to think all servers are dead?
         DataOutputStream pout = new DataOutputStream(s.getOutputStream());
         pout.writeBytes(msg + '\n');
         pout.flush();
@@ -180,14 +180,18 @@ public class Server {
     }
 
     protected void messageAllServers(String msg) {
-        System.out.println("Sending server message to all");
+        System.out.println("Sending server message to all " + serverAddresses.size() + " servers");
         LinkedList<Integer> deadServers = new LinkedList<>();
         for (int i = 0; i < serverAddresses.size(); i++) {
             InetSocketAddress addy = serverAddresses.get(i);
             String addyStr = addy.toString();
             try {
+                System.out.println("Trying send to '" + msg + "' to " + addyStr);
                 Socket s = new Socket(addy.getAddress(), addy.getPort());
-                System.out.println("Sending " + msg + "to" + addyStr);
+                s.setSoTimeout(10); // ok wait this can't be the same timeout as clients... otherwise one dead server will cause clients to think all servers are dead?
+                if (s == null) {
+                    throw new RuntimeException("Socket was null");
+                }
                 messageServer(s, msg);
             } catch (IOException ex) {
                 System.out.println("Failed server msg: " + msg + " to " + addyStr);
@@ -196,7 +200,15 @@ public class Server {
         }
         for (Integer index : deadServers) {
             // handling heartbeat here, also copied this into recovery
+            System.out.println("Dead servers found, removing port " + serverAddresses.get(index.intValue()).getPort());
             serverAddresses.remove(index.intValue());
+        }
+        if (serverAddresses.size() == 0 && deadServers.size() > 0) {
+            System.out.println("Tried to message all servers but they died. Acquire my own CS if needed.");
+            if (msg.contains("requestCS")) {
+                System.out.println("Yeah going into CS since my messages timed out to all others.");
+                mutex.EnterCriticalSection();
+            }
         }
     }
 }

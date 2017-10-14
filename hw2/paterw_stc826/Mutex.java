@@ -79,24 +79,38 @@ public class Mutex {
     void OnReceiveAck() {
         dumpQueue();
         numAcks++;
-        if(numAcks == parent.serverAddresses.size()-1 && q.peek().get_timeStamp().getPid() == myId)
+        if(numAcks == parent.serverAddresses.size() && q.peek().get_timeStamp().getPid() == myId)
         {
-            System.out.println("critical section from acknowledge");
+            System.out.println("This server enters critical section from ACK");
+            if (q.peek().get_timeStamp().getPid() != myId) {
+                throw new RuntimeException("Got all acks but my message is not at top of queue.");
+            }
             EnterCriticalSection();
         }
     }
 
     void OnReceiveRelease(String command) {
+        // REMOVE TIP AND UPDATE RES MANAGER
         dumpQueue();
         int src = Integer.parseInt(command.split(" ")[1]);
-        Iterator<CSRequest> it =  q.iterator();
-        while (it.hasNext()){
-            if (it.next().get_timeStamp().getPid() == src) it.remove();
+        System.out.println("Got release from server position id " + src);
+        CSRequest releasedReq = q.remove();
+        int tsId = releasedReq.get_timeStamp().getPid();
+        System.out.println("Running " + releasedReq.get_command() + " from timestamp id" + tsId);
+        if (src != tsId) {
+            throw new RuntimeException("Got release from " + src + " but released message from " + tsId);
         }
 
-        if(numAcks == parent.serverAddresses.size()-1 && q.peek().get_timeStamp().getPid() == myId)
+        String result = _resManager.HandleCommand(_clientCommand);
+
+        // server addresses is already n-1 because it doesn't include this server
+        System.out.println("Acks so far " + numAcks + " expected acks " + parent.serverAddresses.size());
+        if(numAcks == parent.serverAddresses.size())
         {
-            System.out.println("critical section from release");
+            System.out.println("This server enters critical section from release");
+            if (q.peek().get_timeStamp().getPid() != myId) {
+                throw new RuntimeException("Got all acks but my message is not at top of queue.");
+            }
             EnterCriticalSection();
         }
     }
@@ -122,13 +136,13 @@ public class Mutex {
                 = null;
         try {
             System.out.println("got a response "+result);
+            System.out.println("socket is connected " + _clientSocket.isConnected() + " to " + _clientSocket.getRemoteSocketAddress());
             out = new PrintWriter(_clientSocket.getOutputStream(), true);
             out.write(result);
             out.flush();
-
-            _clientSocket.close();
-            _clientSocket = null;
-            _clientCommand = null;
+            System.out.println("wrote and flushed");
+            // don't close the socket? client is getting error before handling the input. let them close?
+            // don't null out either, only used here and request CS where it gets set
             Release();
         } catch (IOException e) {
             e.printStackTrace();

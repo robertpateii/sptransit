@@ -17,11 +17,13 @@ public class Client {
 
         for (int i = 0; i < numServer; i++) {
             String temp = sc.next();
-            System.out.println("server: " + temp);
+            System.out.println("read server: " + temp);
             int spacerIndex = temp.indexOf(":");
             String host = temp.substring(0, spacerIndex);
             int port = Integer.parseInt(temp.substring(spacerIndex + 1));
+            System.out.println("adding server " + host + " and " + port);
             servers.add(new InetSocketAddress(host, port));
+            System.out.println("Added server " + servers.get(i).getAddress() + " and port " + servers.get(i).getPort());
         }
         String leftoverLineBreak = sc.nextLine();
 
@@ -29,7 +31,6 @@ public class Client {
             System.out.println("ERROR: Could not connect to any servers");
             return;
         }
-
         int connectedServerIndex = 0;
         while (sc.hasNextLine()) {
             String cmd = sc.nextLine();
@@ -37,9 +38,14 @@ public class Client {
 
             boolean failed = true;
             while(failed && connectedServerIndex < servers.size()) {
+                InetAddress serverAddy = servers.get(connectedServerIndex).getAddress();
+                int serverPort = servers.get(connectedServerIndex).getPort();
+                String addyString = serverAddy.getHostAddress() + " and port " + serverPort;
                 try {
-                    Socket server = new Socket(servers.get(connectedServerIndex).getAddress(), servers.get(connectedServerIndex).getPort());
-                    System.out.println("server to connect to: " + servers.get(connectedServerIndex).getHostName() + ":" + servers.get(connectedServerIndex).getPort());
+                    Socket server = new Socket(serverAddy, serverPort);
+                    // let's not timeout... for now...  server.setSoTimeout(100);
+                    System.out.println("server to connect to: " + addyString);
+                    System.out.println("My address: " + server.getLocalAddress() + " port " + server.getLocalPort());
                     BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
                     DataOutputStream pout = new DataOutputStream(server.getOutputStream());
 
@@ -53,12 +59,12 @@ public class Client {
                 }
                 catch(IOException ex)
                 {
-                    System.out.println("failed to connect to "+ servers.get(connectedServerIndex).getAddress());
+                    System.out.println(ex);
+                    System.out.println("failed to connect to "+ addyString);
                     System.out.println("attempting the next server");
                     connectedServerIndex++;
                 }
             }
-
             if(connectedServerIndex == servers.size())
             {
                 System.out.println("Gave up trying ... all servers are down");
