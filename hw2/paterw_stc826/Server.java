@@ -225,5 +225,6 @@ public class Server {
                 mutex.EnterCriticalSection();
             }
         }
+        System.out.println("Done sending message to all servers i guess i'll just wait for next connection.");
     }
 }
