@@ -30,20 +30,40 @@ public class Client {
             return;
         }
 
+        int connectedServerIndex = 0;
         while (sc.hasNextLine()) {
             String cmd = sc.nextLine();
             System.out.println("cmd: " + cmd);
-            Socket server = new Socket(servers.get(0).getAddress(), servers.get(0).getPort());
-            System.out.println("server to connect to: " + servers.get(0).getHostName() + ":" + servers.get(0).getPort());
-            BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
-            DataOutputStream pout = new DataOutputStream(server.getOutputStream());
 
-            pout.writeBytes(cmd + '\n');
-            pout.flush();
+            boolean failed = true;
+            while(failed && connectedServerIndex < servers.size()) {
+                try {
+                    Socket server = new Socket(servers.get(connectedServerIndex).getAddress(), servers.get(connectedServerIndex).getPort());
+                    System.out.println("server to connect to: " + servers.get(connectedServerIndex).getHostName() + ":" + servers.get(connectedServerIndex).getPort());
+                    BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
+                    DataOutputStream pout = new DataOutputStream(server.getOutputStream());
 
-            String retValue = din.readLine(); // scanner next time
-            System.out.println("Response: " + retValue);
-            server.close();
+                    pout.writeBytes(cmd + '\n');
+                    pout.flush();
+
+                    String retValue = din.readLine(); // scanner next time
+                    System.out.println("Response: " + retValue);
+                    server.close();
+                    failed = false;
+                }
+                catch(IOException ex)
+                {
+                    System.out.println("failed to connect to "+ servers.get(connectedServerIndex).getAddress());
+                    System.out.println("attempting the next server");
+                    connectedServerIndex++;
+                }
+            }
+
+            if(connectedServerIndex == servers.size())
+            {
+                System.out.println("Gave up trying ... all servers are down");
+                break;
+            }
         }
     }
 
