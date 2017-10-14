@@ -196,10 +196,13 @@ public class Server {
         LinkedList<Integer> deadServers = new LinkedList<>();
         for (int i = 0; i < serverAddresses.size(); i++) {
             InetSocketAddress addy = serverAddresses.get(i);
-            String addyStr = addy.getAddress() + " and port " + addy.getPort();
+            String addyStr = addy.getHostString() + " and port " + addy.getPort();
+            if (addy.getHostString() == null) {
+                throw new RuntimeException("WHY IS ADDRESS NULL");
+            }
             try {
                 System.out.println("Trying send to '" + msg + "' to " + addyStr);
-                Socket s = new Socket(addy.getAddress(), addy.getPort());
+                Socket s = new Socket(addy.getHostString(), addy.getPort());
                 if (!s.isConnected()) {
                     throw new RuntimeException("Socket didn't connect or died or ? " + s.getInetAddress());
                 }
@@ -214,7 +217,7 @@ public class Server {
             System.out.println("Dead servers found, removing port " + serverAddresses.get(index.intValue()).getPort());
             serverAddresses.remove(index.intValue());
         }
-        if (serverAddresses.size() == 0 && deadServers.size() > 0) {
+        if (serverAddresses.isEmpty() && deadServers.size() > 0) {
             System.out.println("Tried to message all servers but they died. Acquire my own CS if needed.");
             if (msg.contains("requestCS")) {
                 System.out.println("Yeah going into CS since my messages timed out to all others.");

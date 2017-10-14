@@ -33,9 +33,10 @@ public class Recovery {
         if (!command.equals("connect")) System.err.println("Expected connect got " + command);
         String hostName = sc.next();
         String portString = sc.next();
+        System.out.println("Connecting server sent host " + hostName + " and " + portString);
         InetSocketAddress newServerAddress = new InetSocketAddress(hostName, Integer.parseInt(portString));
         parent.serverAddresses.add(newServerAddress);
-        System.out.println("Added new server from port " + portString);
+        System.out.println("Added new server as " + newServerAddress.getHostString() + " port " + newServerAddress.getPort());
 
         seatList = parent.resMgr.seats;
         pendingQueue = new LinkedList<>(parent.mutex.q);
@@ -56,6 +57,7 @@ public class Recovery {
             oos.close();
             pout.flush();
             pout.close();
+            System.out.println("done receiving connect");
         } catch (IOException ex) {
             System.err.println("Receive Connect failed " + ex);
         }
