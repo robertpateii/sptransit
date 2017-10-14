@@ -5,19 +5,19 @@ import java.io.*;
 
 public class Heartbeat {
 
-    private HashSet<Socket> serverSockets;
+    private ArrayList<InetSocketAddress> serverAddresses;
     private InetSocketAddress myAddress;
     private Server parentServer;
 
     Heartbeat(ArrayList<InetSocketAddress> inputServers, Server s) {
-        this.serverSockets = s.serverSockets; // not making a new one, main ref is on server
+        this.serverAddresses = s.serverAddresses; // not making a new one, main ref is on server
         this.myAddress = s.myAddress;
         parentServer = s;
         startHeartbeat(inputServers);
     }
 
     private void startHeartbeat(ArrayList<InetSocketAddress> inputServers) {
-        // Create sockets for all the server addresses that work
+        // Populate serverAddressses with server that work
         for (InetSocketAddress address : inputServers) {
             if (address.equals(myAddress)) {
                 continue;
@@ -30,30 +30,17 @@ public class Heartbeat {
                 DataOutputStream pout = new DataOutputStream(server.getOutputStream());
                 pout.writeBytes("heartbeat" + '\n');
                 pout.flush();
-                String retValue = din.readLine(); // scanner next time
+                pout.close();
+                String retValue = din.readLine();
+                din.close();
                 System.out.println("Response: " + retValue);
                 server.close();
-                if (!serverSockets.add(server)) { // this adds it to serverSockets
-                    System.err.println("ERROR: Socket already in the set.");
-                }
+                serverAddresses.add(address);
             } catch (IOException ex) {
-                // do nothing, only add good connections to serverSockets
+                // do nothing, only add good connections to serverAddresses
                 System.out.println("Failed heartbeat from " + address);
             }
         }
-        maintainHeartbeat();
-    }
-
-    private void maintainHeartbeat() {
-        for (Socket s : serverSockets) {
-            // send heartbeat message
-        }
-
-        /*	1. Start heartbeat to all servers in list
-            2. Remove dead servers
-            assume 1 and 2 is continuous!
-            prevents us from sending other messages to dead servers
-         */
     }
 
     protected void onRecieveHeartbeat(Socket pipe) {
@@ -64,12 +51,10 @@ public class Heartbeat {
             out = new PrintWriter(pipe.getOutputStream(), true);
             out.write("OK");
             out.flush();
+            out.close();
             pipe.close();
         } catch (IOException ex) {
             System.err.println(ex);
-        } finally {
-            out.close();
         }
     }
-
 }

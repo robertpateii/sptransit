@@ -5,14 +5,13 @@ import java.io.*;
 
 public class Server {
 
-    private ArrayList<InetSocketAddress> servers;
-    protected final HashSet<Socket> serverSockets; // used by heartbeat and lamport
+    protected final ArrayList<InetSocketAddress> serverAddresses; // used by heartbeat and lamport
     protected final InetSocketAddress myAddress; // ??do we need this or an index?
     private final int myID;
-    private Mutex mutex;
-    private ReservationMgr resMgr;
-    private Heartbeat hBeat;
-    private Recovery recovery;
+    private final Mutex mutex;
+    private final ReservationMgr resMgr;
+    private final Heartbeat hBeat;
+    private final Recovery recovery;
     protected boolean acceptingClientConnections;
     private final ArrayList<InetSocketAddress> inputServers;
 
@@ -45,7 +44,7 @@ public class Server {
     public Server(int id, int numSeats, ArrayList<InetSocketAddress> inputServers) {
         myID = id;
         this.inputServers = inputServers;
-        serverSockets = new HashSet<>();
+        serverAddresses = new ArrayList<>();
         myAddress = inputServers.get(myID - 1); // Server ID is 1-indexed
         int myPort = myAddress.getPort();
         System.out.println("Opening connections for servers from ID: " + myID
@@ -174,47 +173,43 @@ public class Server {
         pipe.close();
     }
 
-    protected void sendMessage(String msg, Socket server) {
+    protected void messageServer(String msg, InetSocketAddress addy) {
+            String addyStr = addy.toString();
+            try {
+                Socket s = new Socket(addy.getAddress(), addy.getPort());
+                System.out.println("Sending " + msg + "to" + addyStr);
+                messageServer(s, msg);
+            } catch (IOException ex) {
+                System.out.println("Failed server: " + addyStr);
+                serverAddresses.remove(addy);
+            }
     }
 
-    protected void sendMessage(String msg, InetSocketAddress inetSocketAddress) {
-        // do we need this?Should already have socket in serverSockets or...
-        // maybe we need it for clients?If it stays open... we should have like
-        // a list of clients?
-        Socket server = new Socket();
-        try {
-            server.connect(inetSocketAddress);
-            DataOutputStream pout
-                    = new DataOutputStream(server.getOutputStream());
-            pout.writeBytes(msg + '\n');
-            pout.flush();
-            server.close();
-        } catch (IOException ex) {
-            System.err.println(ex);
+    private void messageServer(Socket s, String msg) throws IOException {
+        s.setSoTimeout(100);
+        DataOutputStream pout = new DataOutputStream(s.getOutputStream());
+        pout.writeBytes(msg + '\n');
+        pout.flush();
+        pout.close();
+    }
+
+    protected void messageAllServers(String msg) {
+        System.out.println("Sending server message to all");
+        LinkedList<Integer> deadServers = new LinkedList<>();
+        for (int i = 0; i < serverAddresses.size(); i++) {
+            InetSocketAddress addy = serverAddresses.get(i);
+            String addyStr = addy.toString();
+            try {
+                Socket s = new Socket(addy.getAddress(), addy.getPort());
+                System.out.println("Sending " + msg + "to" + addyStr);
+                messageServer(s, msg);
+            } catch (IOException ex) {
+                System.out.println("Failed server: " + addyStr);
+                deadServers.add(i);
+            }
+        }
+        for (Integer index : deadServers) {
+            serverAddresses.remove(index.intValue());
         }
     }
-
-    // same tuesday night stuff, was sendMessage();
-    private String sendAndReceiveMessage(String message, InetSocketAddress inetSocketAddress) {
-        try {
-            Socket server = new Socket();
-            server.connect(inetSocketAddress);
-
-            BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
-            DataOutputStream pout = new DataOutputStream(server.getOutputStream());
-
-            pout.writeBytes(message + '\n');
-            pout.flush();
-
-            String retValue = din.readLine(); // scanner next time
-            server.close();
-
-            return retValue;
-        } catch (IOException e) {
-            System.err.print(e);
-            return null;
-
-        }
-    }
-
 }

@@ -9,7 +9,7 @@ public class Recovery {
 
     public Recovery(Server server) {
         // assumes heartbeat is keeping serverSockets up to date
-        int serversUp = server.serverSockets.size();
+        int serversUp = server.serverAddresses.size();
         if (serversUp == 0) {
             wasSuccessful = false;
         } else {
@@ -27,6 +27,8 @@ public class Recovery {
 
     // servers send connect when coming back from crash
     void OnReceiveConnect() {
+        // add to socket list, assume single threaded server only one command
+        // hanlded at a time, no one will be accesssing server socket list
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

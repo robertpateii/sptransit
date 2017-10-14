@@ -41,6 +41,23 @@ auxiliary.show.customizer.message=<message>
                 <action name="run">
                     <target>run</target>
                 </action>
+                <action name="debug">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>debug-nb</target>
+                </action>
+                <action name="debug.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>debug-selected-file-in-paterw_stc826</target>
+                    <context>
+                        <property>debug.class</property>
+                        <folder>paterw_stc826</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
             </ide-actions>
             <view>
                 <items>
@@ -57,6 +74,7 @@ auxiliary.show.customizer.message=<message>
                     <ide-action name="rebuild"/>
                     <ide-action name="clean"/>
                     <ide-action name="run"/>
+                    <ide-action name="debug"/>
                 </context-menu>
             </view>
             <subprojects/>
