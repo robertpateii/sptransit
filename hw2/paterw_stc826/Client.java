@@ -67,7 +67,8 @@ public class Client {
             }
             if(connectedServerIndex == servers.size())
             {
-                System.out.println("Gave up trying ... all servers are down");
+                connectedServerIndex = 0;
+                System.out.println("All my servers were dead, but I will never give up and never surrender.");
                 break;
             }
         }

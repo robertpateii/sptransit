@@ -14,6 +14,18 @@ public class Server {
     private final Recovery recovery;
     protected boolean acceptingClientConnections;
     private final ArrayList<InetSocketAddress> inputServers;
+    /* timeout here can't be the same as the clients...
+        client waits 100ms for reply from one server
+        server waits 100ms for every other server
+        if there are 2 servers and 1 times out in this for loop then 100 ms have passed
+        client will have waited 100ms too and try a different server
+        said different server is the dead one
+        client will try 1st server again
+        i guess everyone will keep looping forever until servers stop dying in this for loop
+        ASSUMPTION: servers won't die in this for loop on every loop forever
+    */
+    // waiting 100ms will cause client to disconnect but that's ok because above logic
+    private int messageServerTimeout = 100;
 
     public static void main(String[] args) {
         System.out.println("Scanning server input files.");
@@ -108,7 +120,7 @@ public class Server {
 
             //get the command
             String command = message.split(" ")[0];
-            System.out.println("Recieved Command : " + command);
+            System.out.println("**Recieved Command : " + command);
 
             switch (command) {
                 //client commands
@@ -172,7 +184,7 @@ public class Server {
     }
 
     private void messageServer(Socket s, String msg) throws IOException {
-        s.setSoTimeout(10); // ok wait this can't be the same timeout as clients... otherwise one dead server will cause clients to think all servers are dead?
+        s.setSoTimeout(messageServerTimeout);
         DataOutputStream pout = new DataOutputStream(s.getOutputStream());
         pout.writeBytes(msg + '\n');
         pout.flush();
@@ -184,13 +196,12 @@ public class Server {
         LinkedList<Integer> deadServers = new LinkedList<>();
         for (int i = 0; i < serverAddresses.size(); i++) {
             InetSocketAddress addy = serverAddresses.get(i);
-            String addyStr = addy.toString();
+            String addyStr = addy.getAddress() + " and port " + addy.getPort();
             try {
                 System.out.println("Trying send to '" + msg + "' to " + addyStr);
                 Socket s = new Socket(addy.getAddress(), addy.getPort());
-                s.setSoTimeout(10); // ok wait this can't be the same timeout as clients... otherwise one dead server will cause clients to think all servers are dead?
-                if (s == null) {
-                    throw new RuntimeException("Socket was null");
+                if (!s.isConnected()) {
+                    throw new RuntimeException("Socket didn't connect or died or ? " + s.getInetAddress());
                 }
                 messageServer(s, msg);
             } catch (IOException ex) {
