@@ -95,6 +95,7 @@ public class Server {
             while ((pipe = listener.accept()) != null) {
                 System.out.println("Got Connection " + pipe.getRemoteSocketAddress().toString());
                 handleConnection(pipe);
+                System.out.println("OpenConnection: loop on listener bottom");
                 // don't close in case needed by heartbeat/recovery/etc
             }
             listener.close(); // redundant since while is forever?
@@ -138,11 +139,15 @@ public class Server {
                     if (!acceptingClientConnections) {
                         pipe.close();
                     }
+                    System.out.println("HandleConnection: pre-requestCS");
                     mutex.RequestCS(message, pipe);
+                    System.out.println("HandleConnection: post-requestCS");
                     break;
                 //server commands
                 case "requestCS":
+                    System.out.println("HandleConnection: pre-OnReqRequest");
                     mutex.OnReceiveRequest(message, pipe);
+                    System.out.println("HandleConnection: post-OnReqRequest");
                     break;
                 case "ack":
                     mutex.OnReceiveAck();
@@ -184,12 +189,14 @@ public class Server {
     }
 
     private void messageServer(Socket s, String msg) throws IOException {
+        System.out.println("Enter: messageServer -socket-message");
         s.setSoTimeout(messageServerTimeout);
         DataOutputStream pout = new DataOutputStream(s.getOutputStream());
         pout.writeBytes(msg + '\n');
         pout.flush();
         pout.close();
         s.close();
+        System.out.println("Exit: messageServer -socket-message");
     }
 
     protected void messageAllServers(String msg) {
@@ -203,12 +210,13 @@ public class Server {
             }
             try {
                 System.out.println("Trying send to '" + msg + "' to " + addyStr);
-                Socket s = new Socket(addy.getHostString(), addy.getPort());
+                Socket s = new Socket("127.0.0.1", addy.getPort());
                 if (!s.isConnected()) {
                     throw new RuntimeException("Socket didn't connect or died or ? " + s.getInetAddress());
                 }
                 messageServer(s, msg);
             } catch (IOException ex) {
+                System.out.println(ex);
                 System.out.println("Failed server msg: " + msg + " to " + addyStr);
                 deadServers.add(i);
             }

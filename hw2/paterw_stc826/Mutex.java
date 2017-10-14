@@ -46,7 +46,7 @@ public class Mutex {
     }
 
     public void RequestCS(String command, Socket pipe) {
-        System.out.println("Requesting Critical Section ...");
+        System.out.println("RequestCS: enter");
         c.tick();
         parent.acceptingClientConnections = false;
 
@@ -58,18 +58,21 @@ public class Mutex {
 
         // req includes timestamp and command and client socket/pipe*/
         if(parent.serverAddresses.size()> 0) {
+            // TODO: need to send my address here, because the pipe they get is a random short term one
             parent.messageAllServers("requestCS " + ts);
             q.offer(req);
             numAcks = 0;
+            System.out.println("RequestCS: sent to all");
         }
         else {
-            //TODO : this might not work when the server is recovering
             System.out.println("Entering Critical Section since there are no additional servers");
             EnterCriticalSection();
         }
     }
 
+    // TODO:need to handle not the temporary incoming pipe, but parse out the sender's server IP Address/Port
     void OnReceiveRequest(String message, Socket pipe) {
+        System.out.println("OnReceiveRequest: enter");
         CSRequest req = CSRequest.Parse(message);
         c.receiveAction(req.get_timeStamp().getPid(),req.get_timeStamp().getLogicalClock());
         q.add(new CSRequest(message));

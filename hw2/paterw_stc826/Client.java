@@ -55,6 +55,7 @@ public class Client {
                     pout.writeBytes(cmd + '\n');
                     pout.flush();
 
+                    System.out.println("Waiting for server to reply.");
                     String retValue = din.readLine(); // scanner next time
                     System.out.println("Response: " + retValue);
                     server.close();
@@ -72,7 +73,6 @@ public class Client {
             {
                 connectedServerIndex = 0;
                 System.out.println("All my servers were dead, but I will never give up and never surrender.");
-                break;
             }
         }
     }
