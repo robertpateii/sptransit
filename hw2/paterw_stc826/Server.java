@@ -58,13 +58,13 @@ public class Server {
             resMgr = new ReservationMgr(recovery.seatList);
             mutex = new Mutex(myID, inputServers.size(), resMgr, recovery.pendingQueue, this);
         } else {
-            System.out.println("Recovery failed! Setting up ReservationMgr and Mutex");
+            System.out.println("Recovery failed! Setting up ReservationMgr and Mutex solo.");
             resMgr = new ReservationMgr(numSeats);
             mutex = new Mutex(myID, inputServers.size(), resMgr, this);
         }
         // we're full recovered now, begin accepting clients
         System.out.println("Opening connections to clients");
-        acceptingClientConnections = true;
+        acceptingClientConnections = true; // don't really need this boolean anymore but w/e
         OpenConnection(myPort);
     }
 
@@ -82,16 +82,8 @@ public class Server {
             listener = new ServerSocket(port);
             while ((pipe = listener.accept()) != null) {
                 System.out.println("Got Connection " + pipe.getRemoteSocketAddress().toString());
-                //todo make this multi threaded
-                if (acceptingClientConnections) {
-                    handleConnection(pipe);
-                } else if (isServer(pipe)) {
-                    handleConnection(pipe);
-                } else {
-                    // pipe is a client, but we haven't finished recovery yet
-                    // don't read its input, close it so it tries another server
-                    pipe.close();
-                }
+                handleConnection(pipe);
+                // don't close in case needed by heartbeat/recovery/etc
             }
             listener.close(); // redundant since while is forever?
         } catch (IOException ex) {
@@ -146,11 +138,7 @@ public class Server {
                     hBeat.onRecieveHeartbeat(pipe);
                     break;
                 case "connect":
-                    recovery.OnReceiveConnect();
-                    break;
-                case "recover":
-                    // read the serialized queue and seat table somehow
-                    recovery.OnReceiveRecoveryState();
+                    recovery.OnReceiveConnect(message, pipe);
                     break;
                 default:
                     System.err.println("Invalid command type: " + command);
@@ -203,6 +191,7 @@ public class Server {
             }
         }
         for (Integer index : deadServers) {
+            // handling heartbeat here, also copied this into recovery
             serverAddresses.remove(index.intValue());
         }
     }

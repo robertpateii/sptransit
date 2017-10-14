@@ -51,7 +51,7 @@ public class Mutex {
         parent.acceptingClientConnections = false;
 
         Timestamp ts = new Timestamp(c.getValue(), myId);
-        CSRequest req = new CSRequest(pipe, ts, command);
+        CSRequest req = new CSRequest(ts, command);
         _clientCommand = command;
         _clientSocket = pipe;
 
@@ -70,7 +70,7 @@ public class Mutex {
     }
 
     void OnReceiveRequest(String message, Socket pipe) {
-        CSRequest req = CSRequest.Parse(message, pipe);
+        CSRequest req = CSRequest.Parse(message);
         c.receiveAction(req.get_timeStamp().getPid(),req.get_timeStamp().getLogicalClock());
         q.add(new CSRequest(message));
         parent.messageServer("ack",(InetSocketAddress) pipe.getLocalSocketAddress());

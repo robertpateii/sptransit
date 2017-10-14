@@ -1,18 +1,14 @@
 
-import java.net.Socket;
-
-public class CSRequest {
+public class CSRequest implements java.io.Serializable {
 
     private Timestamp _timeStamp; // includes pid unique to each server
-    private Socket _clientSocket;
     private String _command;
 
-    public static CSRequest Parse(String message, Socket pipe) {
+    public static CSRequest Parse(String message) {
         return new CSRequest(message);
     }
 
-    public CSRequest(Socket clientSocket, Timestamp timeStamp, String command) {
-        _clientSocket = clientSocket;
+    public CSRequest(Timestamp timeStamp, String command) {
         _timeStamp = timeStamp;
         _command = command;
     }
@@ -24,10 +20,6 @@ public class CSRequest {
 
     public Timestamp get_timeStamp() {
         return _timeStamp;
-    }
-
-    public Socket get_clientSocket() {
-        return _clientSocket;
     }
 
     public String get_command() {
