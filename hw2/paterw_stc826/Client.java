@@ -23,7 +23,7 @@ public class Client {
             int port = Integer.parseInt(temp.substring(spacerIndex + 1));
             System.out.println("adding server " + host + " and " + port);
             servers.add(new InetSocketAddress(host, port));
-            System.out.println("Added server " + servers.get(i).getAddress() + " and port " + servers.get(i).getPort());
+            System.out.println("Added server " + servers.get(i).getHostString() + " and port " + servers.get(i).getPort());
         }
         String leftoverLineBreak = sc.nextLine();
 
@@ -41,6 +41,9 @@ public class Client {
                 InetAddress serverAddy = servers.get(connectedServerIndex).getAddress();
                 int serverPort = servers.get(connectedServerIndex).getPort();
                 String addyString = serverAddy.getHostAddress() + " and port " + serverPort;
+                if (serverAddy == null) {
+                    throw new RuntimeException("server addy was null!");
+                }
                 try {
                     Socket server = new Socket(serverAddy, serverPort);
                     // let's not timeout... for now...  server.setSoTimeout(100);
@@ -77,7 +80,7 @@ public class Client {
     private static boolean connectToServer() {
         return true;
         // for each server in servers
-        // open socket new Socket(address.getAddress, address.getPort
+        // open socket new Socket(address.getHostAddress, address.getPort
         // if success, exit loop
         // if fail, remove server from list (per garg)
         // close on error

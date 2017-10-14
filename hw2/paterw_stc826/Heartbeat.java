@@ -23,7 +23,7 @@ public class Heartbeat {
                 continue;
             }
             try {
-                Socket server = new Socket(address.getAddress(), address.getPort());
+                Socket server = new Socket(address.getHostString(), address.getPort());
                 server.setSoTimeout(100);
                 System.out.println("Sending heartbeat to " + address);
                 DataOutputStream pout = new DataOutputStream(server.getOutputStream());

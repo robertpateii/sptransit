@@ -174,7 +174,7 @@ public class Server {
     protected void messageServer(String msg, InetSocketAddress addy) {
             String addyStr = addy.toString();
             try {
-                Socket s = new Socket(addy.getAddress(), addy.getPort());
+                Socket s = new Socket(addy.getHostString(), addy.getPort());
                 System.out.println("Sending " + msg + "to" + addyStr);
                 messageServer(s, msg);
             } catch (IOException ex) {
@@ -189,6 +189,7 @@ public class Server {
         pout.writeBytes(msg + '\n');
         pout.flush();
         pout.close();
+        s.close();
     }
 
     protected void messageAllServers(String msg) {
