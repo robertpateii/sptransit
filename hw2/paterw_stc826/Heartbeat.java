@@ -26,35 +26,22 @@ public class Heartbeat {
                 Socket server = new Socket(address.getAddress(), address.getPort());
                 server.setSoTimeout(100);
                 System.out.println("Sending heartbeat to " + address);
-                BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
                 DataOutputStream pout = new DataOutputStream(server.getOutputStream());
                 pout.writeBytes("heartbeat" + '\n');
                 pout.flush();
                 pout.close();
-                String retValue = din.readLine();
-                din.close();
-                System.out.println("Response: " + retValue);
-                server.close();
                 serverAddresses.add(address);
+                server.close();
+                System.out.println("Successful heartbeat from " + address);
             } catch (IOException ex) {
                 // do nothing, only add good connections to serverAddresses
                 System.out.println("Failed heartbeat from " + address);
+                System.out.println(ex);
             }
         }
     }
 
     protected void onRecieveHeartbeat(Socket pipe) {
-        PrintWriter out
-                = null;
-        try {
-            System.out.println("got heartbeat from " + pipe.getRemoteSocketAddress());
-            out = new PrintWriter(pipe.getOutputStream(), true);
-            out.write("OK");
-            out.flush();
-            out.close();
-            pipe.close();
-        } catch (IOException ex) {
-            System.err.println(ex);
-        }
+        System.out.println("got heartbeat from " + pipe.getRemoteSocketAddress());
     }
 }

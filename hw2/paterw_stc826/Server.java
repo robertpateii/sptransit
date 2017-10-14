@@ -144,11 +144,16 @@ public class Server {
                     break;
                 case "heartbeat":
                     hBeat.onRecieveHeartbeat(pipe);
+                    break;
                 case "connect":
                     recovery.OnReceiveConnect();
+                    break;
                 case "recover":
                     // read the serialized queue and seat table somehow
                     recovery.OnReceiveRecoveryState();
+                    break;
+                default:
+                    System.err.println("Invalid command type: " + command);
             }
         } catch (IOException e) {
             System.err.print(e);
@@ -160,17 +165,6 @@ public class Server {
         // handleClient if it's a client
         // do something else if it's a server message, heart beat, ack, etc
         // pipe.close() at some point??!
-    }
-
-    // for our clients
-    private void handleCommand(String command, Socket pipe) throws IOException {
-        String response = resMgr.HandleCommand(command);
-        // pipe stuff
-        PrintWriter out
-                = new PrintWriter(pipe.getOutputStream(), true);
-        out.write(response);
-        out.flush();
-        pipe.close();
     }
 
     protected void messageServer(String msg, InetSocketAddress addy) {

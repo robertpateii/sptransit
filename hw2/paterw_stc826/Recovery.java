@@ -13,8 +13,7 @@ public class Recovery {
         if (serversUp == 0) {
             wasSuccessful = false;
         } else {
-            recoverState(); // blocks entire server thread
-            wasSuccessful = true;
+            wasSuccessful = recoverState(); // blocks entire server thread
         }
 
         // if no other servers up, use empty seat array
@@ -38,8 +37,9 @@ public class Recovery {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private void recoverState() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    private boolean recoverState() {
+        // temporarily return true so the rest of the system can be worked on
+        return true;
         // if no other server, proceed w/ empty seat array
         /*  3. send Connect(inetaddress/port) to all servers;
         4. Other servers add you to their list
