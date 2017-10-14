@@ -8,7 +8,7 @@ import java.net.*;
 public class Mutex {
 
     private LamportClock c;
-    private PriorityQueue<CSRequest> q; // timestamp, socket, and command
+    protected PriorityQueue<CSRequest> q; // timestamp, and command
     private int numAcks;
     private int myId;
     private Server parent;

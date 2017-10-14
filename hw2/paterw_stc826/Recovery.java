@@ -5,9 +5,9 @@ import java.io.*;
 
 public class Recovery {
 
-    final boolean wasSuccessful;
+    final boolean thisIsOnlyServer;
     ArrayList<String> seatList;
-    Queue<CSRequest> pendingQueue; // timestamp, socket, and command
+    Queue<CSRequest> pendingQueue; // timestamp, and command
     Server parent;
 
     public Recovery(Server server) {
@@ -15,12 +15,12 @@ public class Recovery {
         this.parent = server;
         int serversUp = server.serverAddresses.size();
         if (serversUp == 0) {
-            wasSuccessful = false;
+            // if no other servers up, server uses an empty seat array
+            thisIsOnlyServer = true;
         } else {
-            wasSuccessful = recoverState(); // blocks entire server thread
+            thisIsOnlyServer = false;
+            recoverState(); // blocks entire server thread
         }
-
-        // if no other servers up, use empty seat array
     }
 
     // servers send connect when coming back from crash
@@ -35,30 +35,27 @@ public class Recovery {
         String portString = sc.next();
         InetSocketAddress newServerAddress = new InetSocketAddress(hostName, Integer.parseInt(portString));
         parent.serverAddresses.add(newServerAddress);
+        System.out.println("Added new server from port " + portString);
+
+        seatList = parent.resMgr.seats;
+        pendingQueue = new LinkedList<>(parent.mutex.q);
         
+        if (seatList == null || pendingQueue == null) {
+            throw new RuntimeException("seatList and/or pendingQueue are null, but need to send to new server!");
+        } else {
+            System.out.println("Sending over seats and queue. Seat examples, 0: " + seatList.get(0) + " and 7: " + seatList.get(7));
+        }
         // send 'em the seatList and pendingQueue
-        
         try {
             DataOutputStream pout = new DataOutputStream(newServer.getOutputStream());
             ObjectOutputStream oos= new ObjectOutputStream(pout);
             oos.writeObject(seatList);
+            oos.writeObject(pendingQueue);
+            System.out.println("Wrote out seatList and pendingQueue to new server.");
             oos.flush();
             oos.close();
             pout.flush();
             pout.close();
-
-            DataOutputStream pout2 = new DataOutputStream(newServer.getOutputStream());
-            ObjectOutputStream oos2= new ObjectOutputStream(pout);
-            oos2.writeObject(pendingQueue);
-            oos2.flush();
-            oos2.close();
-            pout2.flush();
-            pout2.close();
-
-
-            // SERIALIZE seatList and Pnedingqueue here:pout.writeBytes("\n")
-
-            // probably don't close it let them close it
         } catch (IOException ex) {
             System.err.println("Receive Connect failed " + ex);
         }
@@ -85,19 +82,16 @@ public class Recovery {
                 System.out.println("Sending connect to recovery to " + targetAddy.toString());
                 DataOutputStream pout = new DataOutputStream(s.getOutputStream());
                 pout.writeBytes("connect " + myAddy + " " + myPortStr + "\n");
-                pout.flush();
-                pout.close();
                 // deserialize seatList and pendingQueue
                 ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
                 seatList  = (ArrayList<String>) ois.readObject();
+                pendingQueue  = (Queue<CSRequest>) ois.readObject();
                 ois.close();
-                ObjectInputStream ois2 = new ObjectInputStream(s.getInputStream());
-                pendingQueue  = (Queue<CSRequest>) ois2.readObject();
-                ois2.close();
+                pout.close();
                 // done?
                 s.close();
             } catch (IOException ex) {
-                System.out.println("Failed server: " + targetAddy.toString());
+                System.out.println("Failed recovery connection to: " + targetAddy.toString());
                 deadServers.add(i);
             } catch (ClassNotFoundException exC) {
                 System.err.println(exC);
@@ -109,6 +103,11 @@ public class Recovery {
         }
 
         // if recovery fails we should throw an exception actually
+        if (seatList == null || pendingQueue == null) {
+            throw new RuntimeException("Recovery completed but seatList and/or pendingQueue are null");
+        } else {
+            System.out.println("Recovered seat list examples, 0: " + seatList.get(0) + " and 7: " + seatList.get(7));
+        }
         return true;
     }
 

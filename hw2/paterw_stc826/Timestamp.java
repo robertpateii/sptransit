@@ -1,5 +1,5 @@
 
-public class Timestamp {
+public class Timestamp implements java.io.Serializable {
 
     public Timestamp(int logicalClock, int pid) {
         super();

@@ -8,7 +8,7 @@ public class ReservationMgr {
      * reservation null value means the seat is not reserved The methods for the
      * commands handle incrementing the seat index by one for the users.
      */
-    final ArrayList<String> seats;
+    protected final ArrayList<String> seats;
 
     public ReservationMgr(int numSeats) {
         seats = new ArrayList<>(numSeats);

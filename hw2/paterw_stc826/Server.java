@@ -8,8 +8,8 @@ public class Server {
     protected final ArrayList<InetSocketAddress> serverAddresses; // used by heartbeat and lamport
     protected final InetSocketAddress myAddress; // ??do we need this or an index?
     private final int myID;
-    private final Mutex mutex;
-    private final ReservationMgr resMgr;
+    protected final Mutex mutex;
+    protected final ReservationMgr resMgr;
     private final Heartbeat hBeat;
     private final Recovery recovery;
     protected boolean acceptingClientConnections;
@@ -47,24 +47,24 @@ public class Server {
         serverAddresses = new ArrayList<>();
         myAddress = inputServers.get(myID - 1); // Server ID is 1-indexed
         int myPort = myAddress.getPort();
-        System.out.println("Opening connections for servers from ID: " + myID
-                + " and port: " + myPort);
         System.out.println("Starting heartbeat");
         hBeat = new Heartbeat(inputServers, this); // prune and setup hbeat
         System.out.println("Attempting recovery");
         recovery = new Recovery(this);
-        if (recovery.wasSuccessful) {
-            System.out.println("Successful recovery, setting up ReservationMgr and Mutex");
-            resMgr = new ReservationMgr(recovery.seatList);
-            mutex = new Mutex(myID, inputServers.size(), resMgr, recovery.pendingQueue, this);
-        } else {
-            System.out.println("Recovery failed! Setting up ReservationMgr and Mutex solo.");
+        if (recovery.thisIsOnlyServer) {
+            System.out.println("This is the only server. Setting up ReservationMgr and Mutex solo.");
             resMgr = new ReservationMgr(numSeats);
             mutex = new Mutex(myID, inputServers.size(), resMgr, this);
+        } else {
+            System.out.println("Successful remote recovery, setting up ReservationMgr and Mutex");
+            resMgr = new ReservationMgr(recovery.seatList);
+            mutex = new Mutex(myID, inputServers.size(), resMgr, recovery.pendingQueue, this);
         }
         // we're full recovered now, begin accepting clients
-        System.out.println("Opening connections to clients");
-        acceptingClientConnections = true; // don't really need this boolean anymore but w/e
+        System.out.println("Opening connections for servers from ID: " + myID
+                + " and port: " + myPort);
+
+        acceptingClientConnections = true; // this is also used when we're in CS so don't get rid of it
         OpenConnection(myPort);
     }
 
@@ -100,8 +100,9 @@ public class Server {
          */
         try {
             System.out.println("Entering Handle Connection"); 
+            InputStream inputStream = pipe.getInputStream();
             BufferedReader in = new BufferedReader(
-                    new InputStreamReader(pipe.getInputStream()));
+                    new InputStreamReader(inputStream));
             //assuming single line messages for everything except recovery
             String message = in.readLine();
 
@@ -122,6 +123,9 @@ public class Server {
                     clientRequestQueue.add(message);
                     clientSockets.add(pipe);
                      */
+                    if (!acceptingClientConnections) {
+                        pipe.close();
+                    }
                     mutex.RequestCS(message, pipe);
                     break;
                 //server commands
@@ -162,7 +166,7 @@ public class Server {
                 System.out.println("Sending " + msg + "to" + addyStr);
                 messageServer(s, msg);
             } catch (IOException ex) {
-                System.out.println("Failed server: " + addyStr);
+                System.out.println("Failed server msg: " + msg + " to " + addyStr);
                 serverAddresses.remove(addy);
             }
     }
@@ -186,7 +190,7 @@ public class Server {
                 System.out.println("Sending " + msg + "to" + addyStr);
                 messageServer(s, msg);
             } catch (IOException ex) {
-                System.out.println("Failed server: " + addyStr);
+                System.out.println("Failed server msg: " + msg + " to " + addyStr);
                 deadServers.add(i);
             }
         }

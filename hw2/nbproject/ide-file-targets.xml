@@ -20,18 +20,6 @@
     <!-- TODO: edit the following target according to your needs -->
     <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
     <target name="debug-selected-file-in-paterw_stc826">
-    <action name="run.single">
-        <target>run-single</target>
-        <context>
-            <property>runclass</property>
-            <folder>${src.dir}</folder>
-            <pattern>\.java$</pattern>
-            <format>java-name</format>
-            <arity>
-                <one-file-only/>
-            </arity>
-        </context>
-    </action>
         <fail unless="debug.class">Must set property 'debug.class'</fail>
         <path id="cp">
             <!-- TODO configure the runtime classpath for your project here: -->
@@ -39,7 +27,7 @@
         <nbjpdastart addressproperty="jpda.address" name="HW2" transport="dt_socket">
             <classpath refid="cp"/>
         </nbjpdastart>
-        <java classname="${debug.class}" fork="true" input=".\inputs\client1.txt">
+        <java classname="${debug.class}" fork="true" input=".\inputs\server1.txt">
             <classpath location="${build}"/>
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
