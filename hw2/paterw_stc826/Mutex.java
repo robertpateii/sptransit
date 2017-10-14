@@ -138,7 +138,7 @@ public class Mutex {
             System.out.println("got a response "+result);
             System.out.println("socket is connected " + _clientSocket.isConnected() + " to " + _clientSocket.getRemoteSocketAddress());
             out = new PrintWriter(_clientSocket.getOutputStream(), true);
-            out.write(result);
+            out.write(result + "\n");
             out.flush();
             System.out.println("wrote and flushed");
             // don't close the socket? client is getting error before handling the input. let them close?
