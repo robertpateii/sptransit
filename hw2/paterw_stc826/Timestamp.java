@@ -7,12 +7,6 @@ public class Timestamp implements java.io.Serializable {
         this.pid = pid;
     }
 
-    public Timestamp(String tsString)
-    {
-        this.pid = Integer.parseInt(tsString.split(" ")[1]);
-        this.logicalClock = Integer.parseInt(tsString.split(" ")[2]);
-    }
-
     public static int compare(Timestamp a, Timestamp b) {
 
         if (a.logicalClock > b.logicalClock) {

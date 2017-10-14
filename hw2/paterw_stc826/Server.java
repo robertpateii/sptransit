@@ -146,7 +146,7 @@ public class Server {
                 //server commands
                 case "requestCS":
                     System.out.println("HandleConnection: pre-OnReqRequest");
-                    mutex.OnReceiveRequest(message, pipe);
+                    mutex.OnReceiveRequest(message);
                     System.out.println("HandleConnection: post-OnReqRequest");
                     break;
                 case "ack":

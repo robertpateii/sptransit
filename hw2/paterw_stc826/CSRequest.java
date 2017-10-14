@@ -4,18 +4,14 @@ public class CSRequest implements java.io.Serializable {
     private Timestamp _timeStamp; // includes pid unique to each server
     private String _command;
 
-    public static CSRequest Parse(String message) {
-        return new CSRequest(message);
+    public CSRequest(int pid, int clock) {
+        
+        _timeStamp = new Timestamp(clock, pid);
     }
 
     public CSRequest(Timestamp timeStamp, String command) {
         _timeStamp = timeStamp;
         _command = command;
-    }
-
-    public CSRequest(String command)
-    {
-        _timeStamp = new Timestamp(command);
     }
 
     public Timestamp get_timeStamp() {

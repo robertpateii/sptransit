@@ -59,7 +59,8 @@ public class Mutex {
         // req includes timestamp and command and client socket/pipe*/
         if(parent.serverAddresses.size()> 0) {
             // TODO: need to send my address here, because the pipe they get is a random short term one
-            parent.messageAllServers("requestCS " + ts);
+            parent.messageAllServers("requestCS " + parent.myAddress.getHostString() +
+                    " " + parent.myAddress.getPort() + " " + ts);
             q.offer(req);
             numAcks = 0;
             System.out.println("RequestCS: sent to all");
@@ -71,13 +72,19 @@ public class Mutex {
     }
 
     // TODO:need to handle not the temporary incoming pipe, but parse out the sender's server IP Address/Port
-    void OnReceiveRequest(String message, Socket pipe) {
+    void OnReceiveRequest(String message) {
         System.out.println("OnReceiveRequest: enter");
-        CSRequest req = CSRequest.Parse(message);
+        Scanner sc = new Scanner(message);
+        String command = sc.next();
+        String targetAddress = sc.next();
+        String portString = sc.next();
+        String pid = sc.next();
+        String clock = sc.next();
+        CSRequest req = new CSRequest(Integer.parseInt(pid), Integer.parseInt(clock));
         c.receiveAction(req.get_timeStamp().getPid(),req.get_timeStamp().getLogicalClock());
-        q.add(new CSRequest(message));
-        System.out.println("Asking parent server to send ack to " + pipe.getRemoteSocketAddress() + " and port " + pipe.getPort());
-        parent.messageServer("ack",(InetSocketAddress) pipe.getRemoteSocketAddress());
+        q.add(req);
+        System.out.println("Asking parent server to send ack to " + targetAddress + " and port " + portString);
+        parent.messageServer("ack", new InetSocketAddress(targetAddress, Integer.parseInt(portString)));
     }
 
     void OnReceiveAck() {
@@ -98,17 +105,19 @@ public class Mutex {
         dumpQueue();
         int src = Integer.parseInt(command.split(" ")[1]);
         System.out.println("Got release from server position id " + src);
+        String clientCommand = command.split("#")[1]; //
         CSRequest releasedReq = q.remove();
         int tsId = releasedReq.get_timeStamp().getPid();
-        System.out.println("Running " + releasedReq.get_command() + " from timestamp id" + tsId);
+        System.out.println("Running " + clientCommand + " from timestamp id" + tsId);
         if (src != tsId) {
             throw new RuntimeException("Got release from " + src + " but released message from " + tsId);
         }
 
-        String result = _resManager.HandleCommand(_clientCommand);
+        String result = _resManager.HandleCommand(clientCommand); // don't need result normally sent to client
+        System.out.println("Handle client command from remote server: " + clientCommand);
 
         // server addresses is already n-1 because it doesn't include this server
-        System.out.println("Acks so far " + numAcks + " expected acks " + parent.serverAddresses.size());
+        System.out.println("Acks so far " + numAcks + " max acks " + parent.serverAddresses.size());
         if(numAcks == parent.serverAddresses.size())
         {
             System.out.println("This server enters critical section from release");
@@ -128,7 +137,8 @@ public class Mutex {
         parent.acceptingClientConnections = true;
         if(q.size()>0) {
             q.remove();
-            parent.messageAllServers("release " + myId);
+            numAcks = 0;
+            parent.messageAllServers("release " + myId + " #" + _clientCommand);
         }
     }
 
@@ -156,7 +166,7 @@ public class Mutex {
 
     private void dumpQueue()
     {
-        System.out.println("**********************");
+        System.out.println("* Remaining Queue timestamps, pid and logical clock*");
         Iterator<CSRequest> it =  q.iterator();
         while (it.hasNext()){
             System.out.println(it.next().get_timeStamp());
