@@ -73,7 +73,8 @@ public class Mutex {
         CSRequest req = CSRequest.Parse(message);
         c.receiveAction(req.get_timeStamp().getPid(),req.get_timeStamp().getLogicalClock());
         q.add(new CSRequest(message));
-        parent.messageServer("ack",(InetSocketAddress) pipe.getLocalSocketAddress());
+        System.out.println("Asking parent server to send ack to " + pipe.getRemoteSocketAddress() + " and port " + pipe.getPort());
+        parent.messageServer("ack",(InetSocketAddress) pipe.getRemoteSocketAddress());
     }
 
     void OnReceiveAck() {
