@@ -23,3 +23,6 @@ hs_err_pid*
 
 #Netbeans Private Settings #
 private.xml
+
+#intellij#
+.idea
