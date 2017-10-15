@@ -1,2 +1,0 @@
-Assumptions:
-We only need to get the state and pending queue from one other server because we're assuming it will be in sync across all servers. If casual ordering fails then maybe not, but let's assume we have it.
