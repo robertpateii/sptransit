@@ -1,6 +1,15 @@
 start cmd /k "java -cp build Server < inputs\server1.txt"
 pause
 start cmd /k "java -cp build Server < inputs\server2.txt"
+start cmd /k "java -cp build Server < inputs\server3.txt"
 pause
 start cmd /k "java -cp build Client < inputs\client1.txt"
 start cmd /k "java -cp build Client < inputs\client2.txt"
+start cmd /k "java -cp build Client < inputs\client3.txt"
+start cmd /k "java -cp build Client < inputs\client4.txt"
+start cmd /k "java -cp build Client < inputs\client5.txt"
+start cmd /k "java -cp build Server < inputs\server4.txt"
+start cmd /k "java -cp build Server < inputs\server5.txt"
+start cmd /k "java -cp build Server < inputs\server6.txt"
+start cmd /k "java -cp build Client < inputs\client6.txt"
+start cmd /k "java -cp build Client < inputs\client7.txt"
