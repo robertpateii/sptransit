@@ -10,6 +10,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 public class WordCount {
 
@@ -21,12 +22,13 @@ public class WordCount {
 
     public void map(Object key, Text value, Context context
                     ) throws IOException, InterruptedException {
+      String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
       String simplified = value.toString();
       simplified = simplified.toLowerCase();
       simplified = simplified.replaceAll("[^a-z]"," ");
       StringTokenizer itr = new StringTokenizer(simplified);
       while (itr.hasMoreTokens()) {
-        word.set(itr.nextToken());
+        word.set(itr.nextToken() + "-" + fileName );
         context.write(word, one);
       }
     }
