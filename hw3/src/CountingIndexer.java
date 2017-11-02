@@ -17,7 +17,7 @@ import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.LinkedHashMap;
 
-public class WordCount {
+public class CountingIndexer {
 
   public static class TokenizerMapper
        extends Mapper<Object, Text, Text, Text>{
@@ -79,7 +79,7 @@ public class WordCount {
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
     Job job = Job.getInstance(conf, "word count");
-    job.setJarByClass(WordCount.class);
+    job.setJarByClass(CountingIndexer.class);
     job.setMapperClass(TokenizerMapper.class);
     //job.setCombinerClass(IntSumReducer.class);
     job.setReducerClass(IntSumReducer.class);

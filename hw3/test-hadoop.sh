@@ -5,7 +5,7 @@ hdfs dfs -copyFromLocal input/ /input # copy the local directory to HDFS
 echo "TEST SCRIPT: Copied local input to DFS. Here's the files on HDFS:"
 hdfs dfs -ls /input
 echo "TEST SCRIPT: Kicking off the test..."
-hadoop jar wc.jar WordCount /input /output
+hadoop jar wc.jar CountingIndexer /input /output
 echo "TEST SCRIPT: Done with test. Copying over output then cleaning up"
 hdfs dfs -ls /output # you should see all the outputs
 hdfs dfs -copyToLocal /output # download the result from HDFS
