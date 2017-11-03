@@ -1,0 +1,86 @@
+% This is the LaTeX template file for lecture notes for EE 382C/EE 361C/EE 382N/etc.
+% This template is based on the template for Prof. Sinclair's CS 270.
+
+\documentclass[twoside]{article}
+\usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+\urlstyle{same}
+\setlength{\oddsidemargin}{0.25 in}
+\setlength{\evensidemargin}{-0.25 in}
+\setlength{\topmargin}{-0.6 in}
+\setlength{\textwidth}{6.5 in}
+\setlength{\textheight}{8.5 in}
+\setlength{\headsep}{0.75 in}
+\setlength{\parindent}{0 in}
+\setlength{\parskip}{0.1 in}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.4mm}}
+
+\title{Iterim Report: Package for Controlling Delivery of Messages}
+\author{Samuel Cherinet and Robert Pate }
+\date{November 2017}
+
+\begin{document}
+\maketitle
+\HRule
+
+\section{Goal and Use Case}
+
+"Design and implement a package that allows a programmer to specify and control delivery of messages in a distributed program."
+
+As an application developer, I need different instances of my distributed application to communicate with each other. I want to import a package into my code that lets me do that seamlessly with a few commands.
+
+\section{Literature and Other Solutions}
+
+\href{http://zeromq.wdfiles.com/local--files/intro\%3Aread-the-manual/Middleware\%20Trends\%20and\%20Market\%20Leaders\%202011.pdf}{Middleware Trends and Market Leaders 2011} is a paper by A. Dworak, F. Ehm, W. Sliwinski, and M. Sobczak for CERN that analyzes the options for replacing the aging middleware for their 4000 servers and 80,000 devices. 
+
+\href{http://zeromq.org}{ZeroMQ} is "distributed messaging" with many features such as multiple languages, multiple platforms, multiple transport protocols, various patters, open source, and \href{http://zeromq.org/intro:read-the-manual}{good documentation}. The CERN paper rated it the highest and it's had continual development since then.
+
+\href{http://www.inspirel.com/yami4/}{YAMI4} is a "messaging solution for distributed systems" and positions itself as a \href{http://www.inspirel.com/articles/YAMI4_vs_ZeroMQ.html}{"competitor" to ZeroMQ}.
+
+\href{http://www.amqp.org/}{AMQP} stands for "The Advanced Message Queuing Protocol" which is also a good description of it. It became an \href{https://www.oasis-open.org/news/pr/iso-and-iec-approve-oasis-amqp-advanced-message-queuing-protocol}{ISO standard} in 2014 and has various \href{http://www.amqp.org/about/examples}{implementations} by 3rd parties. 
+
+
+\section{Functions and Restrictions}
+
+\subsection{Restrictions}
+
+\begin{enumerate}
+\item Only supports JAVA
+\item Only supports TCP
+\item Intended for distributed architecture
+\item Only support asynchronous messaging
+\end{enumerate}
+
+\subsection{Some Example Functions}
+
+\begin{enumerate}
+\item bindTo("string") ip address and port
+\item Server s = new Server("ip/port string") // takes optional options
+\item s.send("Hello")
+\item receive - tell the server what to expect
+\end{enumerate}
+
+\section{Questions and Next Steps}
+
+
+\begin{enumerate}
+\item Review AMQP to see if it's feasible to build an implementation in a few weeks
+\item Decide what level of message ordering we're going to support
+\item Review the ZeroMQ and YAMI4 semantics for ideas
+\item Outline all the public objects and methods of the package
+\item Construct the minimum functioning package 
+\item Test the package by replacing messaging code from HW2
+\item Iterate and improve
+\end{enumerate}
+
+
+\end{document}
+
