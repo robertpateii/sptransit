@@ -22,9 +22,9 @@ public class ReservationMgr {
     }
 
     public String HandleCommand(String command) {
-        command = command.trim().toLowerCase();
+        command = command.trim();
         String[] options = command.split(" ");
-        String commandType = options[0];
+        String commandType = options[0].toLowerCase();
         switch (commandType) {
             case "reserve":
                 return reserve(options);
