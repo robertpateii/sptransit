@@ -30,3 +30,7 @@ private.xml
 #intellij#
 .idea
 *.iml
+
+#robert stuff#
+project/
+local-maven-repo/
