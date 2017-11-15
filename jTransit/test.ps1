@@ -1,9 +1,13 @@
-echo "need to run servers in background and be able to kill them"
+# this doesn't seem to work but would be nice:
+# $server1 = Start-Job -ScriptBlock {Get-Content inputs\server1.txt | java -cp target\classes Samples.Reservations.Server}
+
 start cmd "/k java -cp target\classes Samples.Reservations.Server < inputs\server1.txt"
 sleep 5
+
 start cmd "/k java -cp target\classes Samples.Reservations.Server < inputs\server2.txt"
 sleep 5
+
 start cmd "/k java -cp target\classes Samples.Reservations.Server < inputs\server3.txt"
 sleep 5
-Get-Content inputs\client1.txt | java -cp target\classes Samples.Reservations.Client
-# https://stackoverflow.com/questions/16098366/can-i-send-some-text-to-the-stdin-of-an-active-process-under-windows
+
+java -cp target\classes Samples.Reservations.Client 3 127.0.0.1:8025 127.0.0.1:8030 127.0.0.1:8035

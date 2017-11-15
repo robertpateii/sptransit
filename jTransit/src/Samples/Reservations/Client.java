@@ -10,28 +10,41 @@ public class Client {
     static ArrayList<InetSocketAddress> servers;
 
     public static void main(String[] args) throws IOException {
+        int numServer;
         System.out.println("Scanning client input files.");
         Scanner sc = new Scanner(System.in);
-        int numServer = sc.nextInt();
-        System.out.println("numServer: " + numServer);
         servers = new ArrayList<>();
-
-        for (int i = 0; i < numServer; i++) {
-            String temp = sc.next();
-            System.out.println("read server: " + temp);
-            int spacerIndex = temp.indexOf(":");
-            String host = temp.substring(0, spacerIndex);
-            int port = Integer.parseInt(temp.substring(spacerIndex + 1));
-            System.out.println("adding server " + host + " and " + port);
-            servers.add(new InetSocketAddress(host, port));
-            System.out.println("Added server " + servers.get(i).getHostString() + " and port " + servers.get(i).getPort());
+        if (args.length > 0) {
+            System.out.println("Main: Parsing args");
+            numServer = Integer.parseInt(args[0]);
+            for (int i = 0; i < numServer; i++) {
+                String temp = args[i+1];
+                System.out.println("read server: " + temp);
+                int spacerIndex = temp.indexOf(":");
+                String host = temp.substring(0, spacerIndex);
+                int port = Integer.parseInt(temp.substring(spacerIndex + 1));
+                System.out.println("adding server " + host + " and " + port);
+                servers.add(new InetSocketAddress(host, port));
+                System.out.println("Added server " + servers.get(i).getHostString() + " and port " + servers.get(i).getPort());
+            }
         }
-        String leftoverLineBreak = sc.nextLine();
-
-        if (connectToServer() == false) {
-            System.out.println("ERROR: Could not connect to any servers");
-            return;
+        else {
+            System.out.println("Main: no args scanning for servers");
+            numServer = sc.nextInt();
+            System.out.println("numServer: " + numServer);
+            for (int i = 0; i < numServer; i++) {
+                String temp = sc.next();
+                System.out.println("read server: " + temp);
+                int spacerIndex = temp.indexOf(":");
+                String host = temp.substring(0, spacerIndex);
+                int port = Integer.parseInt(temp.substring(spacerIndex + 1));
+                System.out.println("adding server " + host + " and " + port);
+                servers.add(new InetSocketAddress(host, port));
+                System.out.println("Added server " + servers.get(i).getHostString() + " and port " + servers.get(i).getPort());
+            }
+            String leftoverLineBreak = sc.nextLine();
         }
+
         int connectedServerIndex = 0;
         while (sc.hasNextLine()) {
             String cmd = sc.nextLine();
@@ -77,16 +90,4 @@ public class Client {
             }
         }
     }
-
-    private static boolean connectToServer() {
-        return true;
-        // for each server in servers
-        // open socket new Socket(address.getHostAddress, address.getPort
-        // if success, exit loop
-        // if fail, remove server from list (per garg)
-        // close on error
-        // return false if all servers fail
-        // don't forget to close at end of main too
-    }
-
 }
