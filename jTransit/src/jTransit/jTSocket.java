@@ -1,9 +1,22 @@
 package jTransit;
 
 public class jTSocket {
-    public void bind(String endpoint){}
+    private jTContext _jTContext;
+    private String _bindEndPoint;
+    private String _connectEndPoint;
 
-    public void connect(String endpoint){}
+    public  jTSocket(jTContext jtcontext)
+    {
+        _jTContext = jtcontext;
+    }
+
+    public void bind(String endpoint){
+        _bindEndPoint = endpoint;
+    }
+
+    public void connect(String endpoint){
+        _connectEndPoint = endpoint;
+    }
 
     public void Send(jTMessage message) {}
 

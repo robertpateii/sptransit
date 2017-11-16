@@ -1,6 +1,12 @@
 package jTransit;
 
+import java.util.ArrayList;
+
 public class jTContext {
-    /*houses list of open sockets ... global thing*/
-    //add socket
+    ArrayList<jTSocket> _sockets;
+
+    public jTContext()
+    {
+        _sockets = new ArrayList<>();
+    }
 }
