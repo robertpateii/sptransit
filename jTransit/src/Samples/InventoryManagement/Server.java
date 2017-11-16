@@ -19,7 +19,7 @@ public class Server {
         tcpPort = Integer.parseInt(args[0]);
         udpPort = Integer.parseInt(args[1]);
         String fileName = args[2];
-        Path path = Paths.get("input\\" + fileName);
+        Path path = Paths.get("inputs\\" + fileName);
         System.out.println("Getting inventory file: " + path.toString());
         List<String> lines;
         lines = Files.readAllLines(path);
