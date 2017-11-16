@@ -2,7 +2,7 @@ package Samples.InventoryManagement;
 
 import java.io.IOException;
 
-public class server {
+public class Server {
 
         public static void main(String[] args) throws IOException
         {

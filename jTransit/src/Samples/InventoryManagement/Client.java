@@ -4,7 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.util.Scanner;
 
-public class client {
+public class Client {
 
     /* this is straight out of the chapter for UDP. It sends a command and then
     waits for a UDP packet to hit its port.
