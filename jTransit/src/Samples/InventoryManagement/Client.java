@@ -2,16 +2,26 @@ package Samples.InventoryManagement;
 
 import java.net.*;
 import java.io.*;
-import java.util.Scanner;
 
-public class client {
+public class Client {
 
-    /* this is straight out of the chapter for UDP. It sends a command and then
-    waits for a UDP packet to hit its port.
-    next step: add a TCP version that's the default, and switche between them
-    when the setmode command comes in.
-    */
     public static void main(String[] args) {
+        String hostAddress;
+        int tcpPort;
+        int udpPort;
+
+        if (args.length != 3) {
+            System.out.println("ERROR: Provide 3 arguments");
+            System.out.println("\t(1) <hostAddress>: the address of the server");
+            System.out.println("\t(2) <tcpPort>: the port number for TCP connection");
+            System.out.println("\t(3) <udpPort>: the port number for UDP connection");
+            System.exit(-1);
+        }
+
+        hostAddress = args[0];
+        tcpPort = Integer.parseInt(args[1]);
+        udpPort = Integer.parseInt(args[2]);
+
         String mode = "T";
 
         System.out.println("Welcome to inventory service client");
@@ -23,53 +33,40 @@ public class client {
         System.out.println("list");
         System.out.println("q to quit");
 
-        try
-        {
-            while(true){
+        try {
+            while (true) {
                 BufferedReader stdinp = new BufferedReader(new InputStreamReader(System.in));
                 String command = stdinp.readLine();
                 String commandType = command.split(" ")[0];
 
-                if(commandType.equals("setmode"))
-                {
+                if (commandType.equals("setmode")) {
                     String arg = command.split(" ")[1].toUpperCase();
                     mode = arg;
                     System.out.println("ok, mode is " + arg);
-                }
-                else if (commandType.equals("q"))
-                {
+                } else if (commandType.equals("q")) {
                     break;
-                }
-                else
-                {
-                    send(mode,command);
+                } else {
+                    send(mode, command, hostAddress, tcpPort, udpPort);
                 }
             }
-        }catch(IOException e)
-        {
+        } catch (IOException e) {
             System.err.println(e);
         }
         return;
     }
 
-    public static void send(String mode,String command )
-    {
-        int tcp_port = 3007,udp_port=3008;
-        String hostname="localhost";
+    public static void send(String mode, String command, String hostAddress, int tcpPort, int udpPort) {
 
-        try
-        {
-            InetAddress ia = InetAddress.getByName(hostname);
+        try {
+            InetAddress ia = InetAddress.getByName(hostAddress);
             int len = 1024;
-            if(mode.equals("T"))
-            {
-                try
-                {
-                    Socket server = new Socket(ia,tcp_port);
+            if (mode.equals("T")) {
+                try {
+                    Socket server = new Socket(ia, tcpPort);
                     BufferedReader din = new BufferedReader(new InputStreamReader(server.getInputStream()));
                     DataOutputStream pout = new DataOutputStream(server.getOutputStream());
 
-                    pout.writeBytes(command+'\n');
+                    pout.writeBytes(command + '\n');
                     pout.flush();
 
                     String retValue = din.readLine(); // scanner next time
@@ -79,26 +76,22 @@ public class client {
                     }
 
                     server.close();
-                }catch (IOException e)
-                {
+                } catch (IOException e) {
                     System.err.println(e);
                 }
-            }
-            else if (mode.equals("U"))
-            {
-                try
-                {
+            } else if (mode.equals("U")) {
+                try {
                     byte[] buffer = new byte[command.length()];
                     buffer = command.getBytes();
-                    DatagramPacket sPacket  = new DatagramPacket(buffer,buffer.length,ia, udp_port);
+                    DatagramPacket sPacket = new DatagramPacket(buffer, buffer.length, ia, udpPort);
                     DatagramSocket dataSocket = new DatagramSocket();
                     dataSocket.send(sPacket);
 
                     byte[] rbuffer = new byte[len];
-                    DatagramPacket rPacket = new DatagramPacket(rbuffer,rbuffer.length);
+                    DatagramPacket rPacket = new DatagramPacket(rbuffer, rbuffer.length);
                     dataSocket.receive(rPacket);
 
-                    String retString = new String(rPacket.getData(),0,rPacket.getLength());
+                    String retString = new String(rPacket.getData(), 0, rPacket.getLength());
                     String[] lines = retString.split("-"); // couldn't get line separator to  work in netbeans console
                     for (String line : lines) {
                         System.out.println(line);
@@ -108,8 +101,7 @@ public class client {
                     System.err.println(e);
                 }
             }
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             System.err.println(e);
         }
     }

@@ -1,4 +1,4 @@
-package Samples.InventoryManagement;
+package inventory;
 public class ProductOrder {
 
     private int _orderId;
