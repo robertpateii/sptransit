@@ -27,9 +27,9 @@ hs_err_pid*
 #Netbeans Private Settings #
 private.xml
 
-#intellij#
-.idea
-*.iml
+# https://intellij-support.jetbrains.com/hc/en-us/articles/206544839-How-to-manage-projects-under-Version-Control-Systems #
+workspace.xml
+tasks.xml
 
 #robert stuff#
 project/
