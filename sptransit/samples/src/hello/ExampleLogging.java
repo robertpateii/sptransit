@@ -6,7 +6,7 @@ public class ExampleLogging {
     private static Logger log;
 
     public static void main(String[] args) {
-        log = HelloLogger.setup();
+        log = HelloLogger.setup("example");
         log.info("Testing logging!");
     }
 }

@@ -6,7 +6,7 @@ public class Client {
     private static java.util.logging.Logger log;
 
     public static void main(String[] args) {
-        log = HelloLogger.setup();
+        log = HelloLogger.setup("client");
         log.info("Starting");
 
         TContext context = new TContext();
