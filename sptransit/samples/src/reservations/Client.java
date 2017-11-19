@@ -18,7 +18,7 @@ public class Client {
             System.out.println("Main: Parsing args");
             numServer = Integer.parseInt(args[0]);
             for (int i = 0; i < numServer; i++) {
-                String temp = args[i+1];
+                String temp = args[i + 1];
                 System.out.println("read server: " + temp);
                 int spacerIndex = temp.indexOf(":");
                 String host = temp.substring(0, spacerIndex);
@@ -27,8 +27,7 @@ public class Client {
                 servers.add(new InetSocketAddress(host, port));
                 System.out.println("Added server " + servers.get(i).getHostString() + " and port " + servers.get(i).getPort());
             }
-        }
-        else {
+        } else {
             System.out.println("Main: no args scanning for servers");
             numServer = sc.nextInt();
             System.out.println("numServer: " + numServer);
@@ -51,7 +50,7 @@ public class Client {
             System.out.println("cmd: " + cmd);
 
             boolean failed = true;
-            while(failed && connectedServerIndex < servers.size()) {
+            while (failed && connectedServerIndex < servers.size()) {
                 InetAddress serverAddy = servers.get(connectedServerIndex).getAddress();
                 int serverPort = servers.get(connectedServerIndex).getPort();
                 String addyString = serverAddy.getHostAddress() + " and port " + serverPort;
@@ -74,17 +73,14 @@ public class Client {
                     System.out.println("Response: " + retValue);
                     server.close();
                     failed = false;
-                }
-                catch(IOException ex)
-                {
+                } catch (IOException ex) {
                     System.out.println(ex);
-                    System.out.println("failed to connect to "+ addyString);
+                    System.out.println("failed to connect to " + addyString);
                     System.out.println("attempting the next server");
                     connectedServerIndex++;
                 }
             }
-            if(connectedServerIndex == servers.size())
-            {
+            if (connectedServerIndex == servers.size()) {
                 connectedServerIndex = 0;
                 System.out.println("All my servers were dead, trying more.");
             }

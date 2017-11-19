@@ -1,4 +1,5 @@
 package inventory;
+
 import java.util.*;
 
 public class InventoryManager {

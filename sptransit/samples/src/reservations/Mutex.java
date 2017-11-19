@@ -58,15 +58,14 @@ public class Mutex {
 
 
         // req includes timestamp and command and client socket/pipe*/
-        if(parent.serverAddresses.size()> 0) {
+        if (parent.serverAddresses.size() > 0) {
             // TODO: need to send my address here, because the pipe they get is a random short term one
             parent.messageAllServers("requestCS " + parent.myAddress.getHostString() +
                     " " + parent.myAddress.getPort() + " " + ts);
             q.offer(req);
             numAcks = 0;
             System.out.println("RequestCS: sent to all");
-        }
-        else {
+        } else {
             System.out.println("Entering Critical Section since there are no additional servers");
             EnterCriticalSection();
         }
@@ -82,7 +81,7 @@ public class Mutex {
         String pid = sc.next();
         String clock = sc.next();
         CSRequest req = new CSRequest(Integer.parseInt(pid), Integer.parseInt(clock));
-        c.receiveAction(req.get_timeStamp().getPid(),req.get_timeStamp().getLogicalClock());
+        c.receiveAction(req.get_timeStamp().getPid(), req.get_timeStamp().getLogicalClock());
         q.add(req);
         System.out.println("Asking parent server to send ack to " + targetAddress + " and port " + portString);
         parent.messageServer("ack", new InetSocketAddress(targetAddress, Integer.parseInt(portString)));
@@ -91,8 +90,7 @@ public class Mutex {
     void OnReceiveAck() {
         dumpQueue();
         numAcks++;
-        if(numAcks == parent.serverAddresses.size() && q.peek().get_timeStamp().getPid() == myId)
-        {
+        if (numAcks == parent.serverAddresses.size() && q.peek().get_timeStamp().getPid() == myId) {
             System.out.println("This server enters critical section from ACK");
             if (q.peek().get_timeStamp().getPid() != myId) {
                 throw new RuntimeException("Got all acks but my message is not at top of queue.");
@@ -119,8 +117,7 @@ public class Mutex {
 
         // server addresses is already n-1 because it doesn't include this server
         System.out.println("Acks so far " + numAcks + " max acks " + parent.serverAddresses.size());
-        if(numAcks == parent.serverAddresses.size())
-        {
+        if (numAcks == parent.serverAddresses.size()) {
             System.out.println("This server enters critical section from release");
             if (q.peek().get_timeStamp().getPid() != myId) {
                 throw new RuntimeException("Got all acks but my message is not at top of queue.");
@@ -131,12 +128,11 @@ public class Mutex {
 
     public void Release() {
         /*
-		q.remove();
-		sendMsg(neighbors, "release", c.getValue());
-
-         */
+        q.remove();
+        sendMsg(neighbors, "release", c.getValue());
+        */
         parent.acceptingClientConnections = true;
-        if(q.size()>0) {
+        if (q.size() > 0) {
             q.remove();
             numAcks = 0;
             parent.messageAllServers("release " + myId + " #" + _clientCommand);
@@ -150,7 +146,7 @@ public class Mutex {
         PrintWriter out
                 = null;
         try {
-            System.out.println("got a response "+result);
+            System.out.println("got a response " + result);
             System.out.println("socket is connected " + _clientSocket.isConnected() + " to " + _clientSocket.getRemoteSocketAddress());
             out = new PrintWriter(_clientSocket.getOutputStream(), true);
             out.write(result + "\n");
@@ -165,11 +161,10 @@ public class Mutex {
 
     }
 
-    private void dumpQueue()
-    {
+    private void dumpQueue() {
         System.out.println("* Remaining Queue timestamps, pid and logical clock*");
-        Iterator<CSRequest> it =  q.iterator();
-        while (it.hasNext()){
+        Iterator<CSRequest> it = q.iterator();
+        while (it.hasNext()) {
             System.out.println(it.next().get_timeStamp());
         }
         System.out.println("**********************");

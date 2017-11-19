@@ -6,7 +6,7 @@ public class CSRequest implements java.io.Serializable {
     private String _command;
 
     public CSRequest(int pid, int clock) {
-        
+
         _timeStamp = new Timestamp(clock, pid);
     }
 

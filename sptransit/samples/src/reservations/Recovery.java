@@ -41,7 +41,7 @@ public class Recovery {
 
         seatList = parent.resMgr.seats;
         pendingQueue = new LinkedList<>(parent.mutex.q);
-        
+
         if (seatList == null || pendingQueue == null) {
             throw new RuntimeException("seatList and/or pendingQueue are null, but need to send to new server!");
         } else {
@@ -50,7 +50,7 @@ public class Recovery {
         // send 'em the seatList and pendingQueue
         try {
             DataOutputStream pout = new DataOutputStream(newServer.getOutputStream());
-            ObjectOutputStream oos= new ObjectOutputStream(pout);
+            ObjectOutputStream oos = new ObjectOutputStream(pout);
             oos.writeObject(seatList);
             oos.writeObject(pendingQueue);
             System.out.println("Wrote out seatList and pendingQueue to new server.");
@@ -87,8 +87,8 @@ public class Recovery {
                 pout.writeBytes("connect " + myAddy + " " + myPortStr + "\n");
                 // deserialize seatList and pendingQueue
                 ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-                seatList  = (ArrayList<String>) ois.readObject();
-                pendingQueue  = (Queue<CSRequest>) ois.readObject();
+                seatList = (ArrayList<String>) ois.readObject();
+                pendingQueue = (Queue<CSRequest>) ois.readObject();
                 ois.close();
                 pout.close();
                 // done?

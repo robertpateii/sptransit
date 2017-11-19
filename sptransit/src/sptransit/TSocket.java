@@ -84,7 +84,7 @@ public class TSocket {
             ObjectOutputStream pout = new ObjectOutputStream(s.getOutputStream());
 
             //set the source of the message here?
-            message.setSourceAddress(InetAddress.getLocalHost().toString(),_bindEndPointPort);
+            message.setSourceAddress(InetAddress.getLocalHost().toString(), _bindEndPointPort);
 
             pout.writeObject(message);
             pout.flush();

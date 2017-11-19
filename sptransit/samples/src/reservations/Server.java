@@ -113,7 +113,7 @@ public class Server {
             3. Command separated by space from rest of message
          */
         try {
-            System.out.println("Entering Handle Connection"); 
+            System.out.println("Entering Handle Connection");
             InputStream inputStream = pipe.getInputStream();
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(inputStream));
@@ -178,15 +178,15 @@ public class Server {
     }
 
     protected void messageServer(String msg, InetSocketAddress addy) {
-            String addyStr = addy.toString();
-            try {
-                Socket s = new Socket(addy.getHostString(), addy.getPort());
-                System.out.println("Sending " + msg + "to" + addyStr);
-                messageServer(s, msg);
-            } catch (IOException ex) {
-                System.out.println("Failed server msg: " + msg + " to " + addyStr);
-                serverAddresses.remove(addy);
-            }
+        String addyStr = addy.toString();
+        try {
+            Socket s = new Socket(addy.getHostString(), addy.getPort());
+            System.out.println("Sending " + msg + "to" + addyStr);
+            messageServer(s, msg);
+        } catch (IOException ex) {
+            System.out.println("Failed server msg: " + msg + " to " + addyStr);
+            serverAddresses.remove(addy);
+        }
     }
 
     private void messageServer(Socket s, String msg) throws IOException {

@@ -13,7 +13,7 @@ public class ReservationMgr {
 
     public ReservationMgr(int numSeats) {
         seats = new ArrayList<>(numSeats);
-        for(int i= 0;i<numSeats;i++)
+        for (int i = 0; i < numSeats; i++)
             seats.add(null);
     }
 
@@ -71,8 +71,8 @@ public class ReservationMgr {
             return "Seat already booked against the name provided";
         }
 
-        if(seatIndex>= seats.size())
-            return "Invalid seat number "+seatNumber;
+        if (seatIndex >= seats.size())
+            return "Invalid seat number " + seatNumber;
 
         if (seats.get(seatIndex) == null) {
             seats.set(seatIndex, name);

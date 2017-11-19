@@ -34,8 +34,7 @@ public class Timestamp implements java.io.Serializable {
         return pid;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return this.pid + " " + this.logicalClock;
     }
 
