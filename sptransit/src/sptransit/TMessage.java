@@ -9,6 +9,11 @@ public class TMessage<E> {
         _body = body;
     }
 
+    public TMessage(E body, TAddress addy) {
+        _body = body;
+        _ipAddress = addy.address;
+        _port = addy.port;
+    }
     public E getBody() {
         return _body;
     }

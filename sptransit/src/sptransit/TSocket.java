@@ -1,5 +1,7 @@
 package sptransit;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -71,10 +73,13 @@ public class TSocket {
     }
 
     public void send(TMessage message) {
-        send(message, _connectEndPointHost, _connectEndPointPort);
+        send(message, new TAddress(_connectEndPointHost, _connectEndPointPort));
     }
 
-    public void send(TMessage message, String host, int port) {
+    public void send(TMessage message, TAddress addy) {
+        String host = addy.address;
+        int port = addy.port;
+
         InetAddress ia;
         try {
             ia = InetAddress.getByName(host);
@@ -92,6 +97,9 @@ public class TSocket {
             String retValue = din.readLine(); // scanner next time
 
             //TODO : add code to ensure that the receiver sent an ACK message back
+            // rob: wait on second thought, do we even need an ack back? It's tcp.
+            // the client knows its message was delivered regardless of ack because it's
+            // tcp stream. right?
 
             s.close();
         } catch (UnknownHostException e) {
@@ -102,6 +110,22 @@ public class TSocket {
     }
 
     public TMessage receive() {
-        return _messageQueue.poll();
+        if (_messageQueue.isEmpty()) {
+            // TODO: yield or wait for it to be not empty?
+            throw new NotImplementedException();
+        }
+        TMessage oldest = _messageQueue.poll();
+        _TContext.setLastSender(new TAddress(oldest.getIpAddress(), oldest.getPort()));
+        return oldest;
+    }
+
+    /**
+     * Assumes a receive() has taken place recently and sends the message to the
+     * last sender.
+     * @param reply The reply message, same as TMessage but no target address
+     */
+    public void reply(TReply reply) {
+        TMessage replyMessage = new TMessage(reply.getBody());
+        send(replyMessage, _TContext.getLastSender());
     }
 }

@@ -12,17 +12,18 @@ public class Client {
         TContext context = new TContext();
         TMessage msg = new TMessage<String>("Hello");
         TSocket server = new TSocket(context);
-        server.bind("localhost", 8000);
+        server.connect("localhost", 8000);
         server.send(msg);
         /* context will receive any messages from this server into a queue,
             because of the implication */
         try {
+            // pretend we're doing unrelated work that doesn't need the reply
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         /* server.receive() will block if there's no messages yet */
         TMessage<String> reply = server.receive();
-        log.info(reply.getBody());
+        log.info("Received: " + reply.getBody());
     }
 }
