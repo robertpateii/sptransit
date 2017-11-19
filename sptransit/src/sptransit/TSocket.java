@@ -19,6 +19,7 @@ public class TSocket {
     public TSocket(TContext tcontext) {
         _TContext = tcontext;
         _messageQueue = new SynchronousQueue<>();
+        _TContext._sockets.add(this);
 
         //TODO : add code to create a default receiving port, when the socket is instantiated as a client
     }
@@ -69,11 +70,11 @@ public class TSocket {
         _connectEndPointPort = port;
     }
 
-    public void Send(TMessage message) {
-        Send(message, _connectEndPointHost, _connectEndPointPort);
+    public void send(TMessage message) {
+        send(message, _connectEndPointHost, _connectEndPointPort);
     }
 
-    public void Send(TMessage message, String host, int port) {
+    public void send(TMessage message, String host, int port) {
         InetAddress ia;
         try {
             ia = InetAddress.getByName(host);
@@ -100,7 +101,7 @@ public class TSocket {
         }
     }
 
-    public TMessage Receive() {
+    public TMessage receive() {
         return _messageQueue.poll();
     }
 }
