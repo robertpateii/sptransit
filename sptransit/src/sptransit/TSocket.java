@@ -19,6 +19,8 @@ public class TSocket {
     public TSocket(TContext tcontext) {
         _TContext = tcontext;
         _messageQueue = new SynchronousQueue<>();
+
+        //TODO : add code to create a default receiving port, when the socket is instantiated as a client
     }
 
     public void bind(String host, int port) {
@@ -42,8 +44,6 @@ public class TSocket {
                         TMessage messge = null;
                         try {
                             messge = (TMessage) in.readObject();
-
-                            //TODO: push it to the message queue
                             _messageQueue.put(messge);
 
                         } catch (ClassNotFoundException e) {
