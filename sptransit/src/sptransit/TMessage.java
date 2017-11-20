@@ -1,6 +1,6 @@
 package sptransit;
 
-public class TMessage<E> {
+public class TMessage<E> implements java.io.Serializable {
     private E _body;
     private String _ipAddress;
     private int _port;
