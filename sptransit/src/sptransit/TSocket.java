@@ -110,9 +110,8 @@ public class TSocket {
     }
 
     public TMessage receive() {
-        if (_messageQueue.isEmpty()) {
-            // TODO: yield or wait for it to be not empty?
-            throw new NotImplementedException();
+        while (_messageQueue.isEmpty()) {
+            // waiting
         }
         TMessage oldest = _messageQueue.poll();
         _TContext.setLastSender(new TAddress(oldest.getIpAddress(), oldest.getPort()));
