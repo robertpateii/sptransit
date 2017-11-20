@@ -9,9 +9,10 @@ public class Server {
         log = HelloLogger.setup("server");
         log.info("Starting");
 
-        TContext context = new TContext();
+        TContext context = new TContext(log);
         TReply reply = new TReply<String>("World");
         TSocket socket = new TSocket(context);
+        log.info("Attempting to bind");
         socket.bind("localhost",8000);
         while (true) {
             log.info("Waiting for a message");

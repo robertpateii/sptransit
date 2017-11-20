@@ -14,7 +14,7 @@ public class HelloLogger {
      * @return a reference to the logger
      */
     public static Logger setup(String source) {
-        logger = Logger.getLogger("samples." + source);
+        logger = Logger.getLogger("samples.hello." + source);
         source = source.toLowerCase();
         try {
             fh = new FileHandler("out/samples-" + source + ".log");

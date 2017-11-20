@@ -77,6 +77,7 @@ public class TSocket {
     }
 
     public void send(TMessage message, TAddress addy) {
+        _TContext.log.info("Prepping for send");
         String host = addy.address;
         int port = addy.port;
 
@@ -89,6 +90,11 @@ public class TSocket {
             ObjectOutputStream pout = new ObjectOutputStream(s.getOutputStream());
 
             //set the source of the message here?
+            // eh seems weird here, maybe we have two classes one without address if the user
+            // doesn't need to put in the address, like i did with TReply. So maybe TPacket
+            // has the message and the address and TMessage just has the body. Then TReply
+            // would be removed and replaced with TMessage and send would take a TMessage
+            // and a TAddress OR a TPacket.
             message.setSourceAddress(InetAddress.getLocalHost().toString(), _bindEndPointPort);
 
             pout.writeObject(message);
