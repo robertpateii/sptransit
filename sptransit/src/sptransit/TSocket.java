@@ -1,58 +1,53 @@
 package sptransit;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class TSocket {
     private TContext _TContext;
-    private String _bindEndPointHost;
-    private int _bindEndPointPort;
-    private String _connectEndPointHost;
-    private int _connectEndPointPort;
-    private Runnable _serverRunner;
-    private SynchronousQueue<TMessage> _messageQueue;
+    private TAddress _bindEndPointAddress;
+    private TAddress _connectEndPointAddress;
+    private Thread _serverRunnerThread;
+    private ConcurrentLinkedQueue<TPacket> _messageQueue;
 
     public TSocket(TContext tcontext) {
         _TContext = tcontext;
-        _messageQueue = new SynchronousQueue<>();
+        _messageQueue = new ConcurrentLinkedQueue<>();
         _TContext._sockets.add(this);
 
         //TODO : add code to create a default receiving port, when the socket is instantiated as a client
     }
 
     public void bind(String host, int port) {
-        _bindEndPointHost = host;
-        _bindEndPointPort = port;
+        _bindEndPointAddress = new TAddress(host, port);
 
-        _serverRunner = new Runnable() {
+        Runnable serverRunner = new Runnable() {
 
             @Override
             public void run() {
                 try {
                     ServerSocket serverSocket = new ServerSocket(port);
 
+                    _TContext.log.info("Starting listening for incoming messages on " + port);
+
                     while (true) {
                         Socket clientSocket = serverSocket.accept();
+                        _TContext.log.info("Received message, Reading Packet Object");
                         //TODO : this should create another thread not to block the server thread
                         ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-
                         PrintWriter out =
                                 new PrintWriter(clientSocket.getOutputStream(), true);
-                        TMessage messge = null;
+                        TPacket packet;
                         try {
-                            messge = (TMessage) in.readObject();
-                            _messageQueue.put(messge);
+                            packet = (TPacket) in.readObject();
+                            _messageQueue.add(packet);
 
                         } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            _TContext.log.severe(e.getMessage());
                         }
                         out.write("ACK");
                         out.flush();
@@ -60,26 +55,26 @@ public class TSocket {
                     }
                 } catch (IOException e) {
                     System.err.println("Accept failed : ");
+                    e.printStackTrace();
                 }
             }
         };
-
-        _serverRunner.run();
+        _serverRunnerThread = new Thread(serverRunner);
+        _serverRunnerThread.start();
     }
 
     public void connect(String host, int port) {
-        _connectEndPointHost = host;
-        _connectEndPointPort = port;
+        _connectEndPointAddress = new TAddress(host, port);
     }
 
     public void send(TMessage message) {
-        send(message, new TAddress(_connectEndPointHost, _connectEndPointPort));
+        send(message, _connectEndPointAddress);
     }
 
     public void send(TMessage message, TAddress addy) {
         _TContext.log.info("Prepping for send");
-        String host = addy.address;
-        int port = addy.port;
+        String host = addy.get_ipaddress();
+        int port = addy.get_port();
 
         InetAddress ia;
         try {
@@ -95,9 +90,9 @@ public class TSocket {
             // has the message and the address and TMessage just has the body. Then TReply
             // would be removed and replaced with TMessage and send would take a TMessage
             // and a TAddress OR a TPacket.
-            message.setSourceAddress(InetAddress.getLocalHost().toString(), _bindEndPointPort);
+            TPacket packet = new TPacket(message, _bindEndPointAddress);
 
-            pout.writeObject(message);
+            pout.writeObject(packet);
             pout.flush();
 
             String retValue = din.readLine(); // scanner next time
@@ -116,21 +111,37 @@ public class TSocket {
     }
 
     public TMessage receive() {
+        _TContext.log.info("Attempting to receive message");
         while (_messageQueue.isEmpty()) {
             // waiting
+            try {
+                Thread.sleep(100);
+                //_TContext.log.info("wating for 100 milli seconds before trying again");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-        TMessage oldest = _messageQueue.poll();
-        _TContext.setLastSender(new TAddress(oldest.getIpAddress(), oldest.getPort()));
-        return oldest;
+        TPacket oldest = _messageQueue.poll();
+        _TContext.setLastSender(new TAddress(oldest.get_address().get_ipaddress(), oldest.get_address().get_port()));
+        _TContext.log.info("received message");
+        return oldest.get_message();
     }
 
     /**
      * Assumes a receive() has taken place recently and sends the message to the
      * last sender.
+     *
      * @param reply The reply message, same as TMessage but no target address
      */
     public void reply(TReply reply) {
         TMessage replyMessage = new TMessage(reply.getBody());
         send(replyMessage, _TContext.getLastSender());
+    }
+
+    /**
+     * @return
+     */
+    public boolean peak() {
+        return !_messageQueue.isEmpty();
     }
 }

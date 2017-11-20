@@ -13,7 +13,7 @@ public class Server {
         TReply reply = new TReply<String>("World");
         TSocket socket = new TSocket(context);
         log.info("Attempting to bind");
-        socket.bind("localhost",8000);
+        socket.bind("localhost", 8585);
         while (true) {
             log.info("Waiting for a message");
             TMessage<String> msg = socket.receive();

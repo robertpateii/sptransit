@@ -12,7 +12,10 @@ public class Client {
         TContext context = new TContext(log);
         TMessage msg = new TMessage<String>("Hello");
         TSocket server = new TSocket(context);
-        server.connect("localhost", 8000);
+        //TODO : this binding should not be explicit, our Tcontext should assign or figure something out to open up a port for incoming messages
+        //to clients
+        server.bind("localhost",8555);
+        server.connect("localhost", 8585);
         log.info("Connected, attempting to send message");
         server.send(msg);
         log.info("Sent: " + msg.getBody());
@@ -28,5 +31,7 @@ public class Client {
         /* server.receive() will block if there's no messages yet */
         TMessage<String> reply = server.receive();
         log.info("Received: " + reply.getBody());
+
+        //TODO : add sample implementation for socket peak
     }
 }
