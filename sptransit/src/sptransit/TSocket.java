@@ -32,6 +32,14 @@ public class TSocket {
                 try {
                     ServerSocket serverSocket = new ServerSocket(port);
 
+                    //if port is randomly generated update the binding address
+                    //TODO : in a network this might not work, since the port has to be allowed thru the fire all,
+                    //ip range might be the solution ... keep thinking
+                    if (port == 0) {
+                        _TContext.log.info("binding to a random port to incoming messages");
+                        _bindEndPointAddress.set_port(serverSocket.getLocalPort());
+                    }
+
                     _TContext.log.info("Starting listening for incoming messages on " + port);
 
                     while (true) {
@@ -75,6 +83,14 @@ public class TSocket {
         _TContext.log.info("Prepping for send");
         String host = addy.get_ipaddress();
         int port = addy.get_port();
+
+
+        //if the socket is not bound to an explicit ip
+        //then bind to random port and start listening
+        if (_bindEndPointAddress == null) {
+            _TContext.log.info("binding to the next available port");
+            bind("localhost", 0);
+        }
 
         InetAddress ia;
         try {

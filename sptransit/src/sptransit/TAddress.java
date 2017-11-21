@@ -16,4 +16,8 @@ public class TAddress implements java.io.Serializable {
     public Integer get_port() {
         return _port;
     }
+
+    public void set_port(int port) {
+        _port = port;
+    }
 }

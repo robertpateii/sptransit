@@ -12,9 +12,6 @@ public class Client {
         TContext context = new TContext(log);
         TMessage msg = new TMessage<String>("Hello");
         TSocket server = new TSocket(context);
-        //TODO : this binding should not be explicit, our Tcontext should assign or figure something out to open up a port for incoming messages
-        //to clients
-        server.bind("localhost",8555);
         server.connect("localhost", 8585);
         log.info("Connected, attempting to send message");
         server.send(msg);
