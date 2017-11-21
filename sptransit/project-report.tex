@@ -1,0 +1,111 @@
+% This is the LaTeX template file for lecture notes for EE 382C/EE 361C/EE 382N/etc.
+% This template is based on the template for Prof. Sinclair's CS 270.
+
+\documentclass[twoside]{article}
+\usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+\urlstyle{same}
+\setlength{\oddsidemargin}{0.25 in}
+\setlength{\evensidemargin}{0.25 in}
+\setlength{\topmargin}{-0.6 in}
+\setlength{\textwidth}{6.5 in}
+\setlength{\textheight}{8.5 in}
+\setlength{\headsep}{0.75 in}
+\setlength{\parindent}{0 in}
+\setlength{\parskip}{0.1 in}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.4mm}}
+
+\title{Term Project: Package for Controlling Delivery of Messages}
+\author{Samuel Cherinet and Robert Pate }
+\date{November 2017}
+
+\begin{document}
+\maketitle
+\HRule
+
+\section{Goal and Use Case}
+
+"Design and implement a package that allows a programmer to specify and control delivery of messages in a distributed program."
+
+As an application developer, I need different instances of my distributed application to communicate with each other. I want to import a package into my code that lets me do that seamlessly with a few commands.
+
+\section{Description}
+
+Transit is package for controlling distribution of messages between java programs. The user can choose to use it asynchronously or synchronously as Transit asynchronously sends and receives messages into a queue.
+
+In a typical hello world from a client to the server, the user will create a new context for Transit and connect to a server by IP and port. Connecting to the server doesn't block anything, it is a convenient way to set the target server for all the following messages. 
+ 
+Next the client sends a message. The Transit context on the client will add onto the message information about itself so the server can reply to it at anytime (or never). To facilitate this the context of course needs to listen on the port it's passing with the message. It will reject any messages that the client hasn't specified it wants to connect to either through calling connect or by sending a message directly with the IP Address included.
+
+The server acts like a UDP server, listening for clients, spinning off a thread to deal with them, and storing the clients reply-to information for later reply. This is all in the context though, the user will simply be iterating over a queue of expected messages.
+
+All this is over TCP so we know whether or not a message is actually received. What we don't know is if the user intends a given message to have a reply or if it was just one way. This and the object type of the message is up to the user.
+
+
+
+
+\section{Functions and Restrictions}
+
+\subsection{Restrictions}
+
+\begin{enumerate}
+\item Only supports JAVA
+\item Only uses TCP on the back-end
+\item Intended for distributed architecture
+\item No stream support, only message passing
+\end{enumerate}
+
+\subsection{Client Functions}
+\begin{enumerate}
+    \item Clients can send a message to a server
+    \item Clients can proceed without holding open a stream or a socket
+    \item Clients eventually wait to receive a message back
+    \item Clients can peek at the message queue to poll instead of wait
+\end{enumerate}
+
+\subsection{Server Functions}
+\begin{enumerate}
+    \item 
+\end{enumerate}
+
+\subsection{Context Functions}
+\begin{enumerate}
+    \item 
+\end{enumerate}
+
+\subsection{Helper Classes}
+\begin{enumerate}
+    \item 
+\end{enumerate}
+
+\subsection{Sample Library}
+\begin{enumerate}
+    \item 
+\end{enumerate}
+
+
+
+\section{Literature and Other Solutions}
+
+\href{http://zeromq.wdfiles.com/local--files/intro\%3Aread-the-manual/Middleware\%20Trends\%20and\%20Market\%20Leaders\%202011.pdf}{Middleware Trends and Market Leaders 2011} is a paper by A. Dworak, F. Ehm, W. Sliwinski, and M. Sobczak for CERN that analyzes the options for replacing the aging middleware for their 4000 servers and 80,000 devices. 
+
+\href{http://zeromq.org}{ZeroMQ} is "distributed messaging" with many features such as multiple languages, multiple platforms, multiple transport protocols, various patters, open source, and \href{http://zeromq.org/intro:read-the-manual}{good documentation}. The CERN paper rated it the highest and it's had continual development since then.
+
+\href{http://www.inspirel.com/yami4/}{YAMI4} is a "messaging solution for distributed systems" and positions itself as a \href{http://www.inspirel.com/articles/YAMI4_vs_ZeroMQ.html}{"competitor" to ZeroMQ}.
+
+\href{http://www.amqp.org/}{AMQP} stands for "The Advanced Message Queuing Protocol" which is also a good description of it. It became an \href{https://www.oasis-open.org/news/pr/iso-and-iec-approve-oasis-amqp-advanced-message-queuing-protocol}{ISO standard} in 2014 and has various \href{http://www.amqp.org/about/examples}{implementations} by 3rd parties. 
+
+
+
+
+
+\end{document}
+
