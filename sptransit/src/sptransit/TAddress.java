@@ -1,23 +1,24 @@
 package sptransit;
 
-public class TAddress implements java.io.Serializable {
-    private String _ipaddress;
-    private Integer _port;
+// This is only used within this package so don't make it public
+class TAddress implements java.io.Serializable {
+    private String ipaddress;
+    private Integer port;
 
     public TAddress(String address, Integer port) {
-        this._ipaddress = address;
-        this._port = port;
+        this.ipaddress = address;
+        this.port = port;
     }
 
-    public String get_ipaddress() {
-        return _ipaddress;
+    public String getIPAddress() {
+        return ipaddress;
     }
 
-    public Integer get_port() {
-        return _port;
+    public Integer getPort() {
+        return port;
     }
 
-    public void set_port(int port) {
-        _port = port;
+    public void setPort(int port) {
+        this.port = port;
     }
 }

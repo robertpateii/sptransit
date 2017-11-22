@@ -2,6 +2,8 @@ package hello;
 
 import sptransit.*;
 
+import java.io.Serializable;
+
 public class Client {
     private static java.util.logging.Logger log;
 
@@ -10,12 +12,12 @@ public class Client {
         log.info("Starting");
 
         TContext context = new TContext(log);
-        TMessage msg = new TMessage<String>("Hello");
+        String msg = "Hello";
         TSocket server = new TSocket(context);
         server.connect("localhost", 8585);
         log.info("Connected, attempting to send message");
-        server.send(msg);
-        log.info("Sent: " + msg.getBody());
+        server.send(msg); // send takes only serializable objects
+        log.info("Sent: " + msg);
         /* context will receive any messages from this server into a queue,
             because of the implication */
         try {
@@ -26,9 +28,9 @@ public class Client {
         }
         log.info("Done sleeping, waiting on reply");
         /* server.receive() will block if there's no messages yet */
-        TMessage<String> reply = server.receive();
-        log.info("Received: " + reply.getBody());
+        Serializable reply = server.receive();
+        log.info("Received: " + reply.toString());
 
-        //TODO : add sample implementation for socket peak
+        //TODO : add sample implementation for socket peek
     }
 }

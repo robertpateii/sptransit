@@ -1,27 +1,13 @@
 package sptransit;
 
-public class TPacket<E> implements java.io.Serializable {
-    private TMessage<E> _message;
-    private TAddress _address;
+import java.io.Serializable;
 
-    public TPacket(TMessage<E> message, TAddress address) {
-        _message = message;
-        _address = address;
-    }
+public class TPacket implements java.io.Serializable {
+    final Serializable message;
+    final TAddress address;
 
-    public TMessage<E> get_message() {
-        return _message;
-    }
-
-    public void set_message(TMessage<E> _message) {
-        this._message = _message;
-    }
-
-    public TAddress get_address() {
-        return _address;
-    }
-
-    public void set_address(TAddress _address) {
-        this._address = _address;
+    public TPacket(Serializable message, TAddress address) {
+        this.message = message;
+        this.address = address;
     }
 }
