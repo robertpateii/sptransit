@@ -19,6 +19,14 @@ public class TSocket {
         _TContext.sockets.add(this);
 
         //TODO : add code to create a default receiving port, when the socket is instantiated as a client
+        // idea: client calls socket.connect() before it sends so why not set the port then. this mirrors
+        // how the server works, its port is set when it calls socket.bind().
+        // also it seems risky and confusing to use our public bind method internally to create a listener
+        // socket for the client. let's make some private method to deal with that issue.
+    }
+
+    private void bindLocally() {
+
     }
 
     /**
@@ -82,6 +90,12 @@ public class TSocket {
      */
     public void connect(String host, int port) {
         _connectEndPointAddress = new TAddress(host, port);
+        // clients will need a hidden listener server to get replies
+        // so let's establish it now
+        if (_bindEndPointAddress == null) {
+            _TContext.log.info("binding to the next available port");
+            bind("localhost", 0);
+        }
     }
 
     public void send(Serializable message) {
@@ -91,11 +105,8 @@ public class TSocket {
     private void send(Serializable message, TAddress address) {
         _TContext.log.info("Prepping for send");
 
-        //if the socket is not bound to an explicit ip
-        //then bind to random port and start listening
         if (_bindEndPointAddress == null) {
-            _TContext.log.info("binding to the next available port");
-            bind("localhost", 0);
+            throw new RuntimeException("Unexpected sending without an address to recieve a reply");
         }
 
         try {
