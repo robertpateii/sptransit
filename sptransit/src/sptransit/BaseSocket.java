@@ -9,11 +9,11 @@ import java.util.logging.Logger;
 
 class BaseSocket {
 
-    private Logger log;
-    private TAddress _bindEndPointAddress;
-    private TAddress _connectEndPointAddress;
-    private Thread _serverRunnerThread;
-    private ConcurrentLinkedQueue<TPacket> messageQueue;
+    protected Logger log;
+    protected TAddress _bindEndPointAddress;
+    protected TAddress _connectEndPointAddress;
+    protected Thread _serverRunnerThread;
+    protected ConcurrentLinkedQueue<TPacket> messageQueue;
 
     public BaseSocket(Logger log) {
         messageQueue = new ConcurrentLinkedQueue<>();
