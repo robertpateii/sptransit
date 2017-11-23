@@ -44,11 +44,10 @@ class BaseSocket {
                         _bindEndPointAddress.setPort(serverSocket.getLocalPort());
                     }
 
-                    log.info("Starting listening for incoming messages on " + port);
+                    log.info("Listening on port " + port);
 
                     while (true) {
                         Socket clientSocket = serverSocket.accept();
-                        log.info("Received message, Reading Packet Object");
                         //TODO : this should create another thread not to block the server thread
                         ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
                         PrintWriter out =
@@ -66,8 +65,7 @@ class BaseSocket {
                         clientSocket.close();
                     }
                 } catch (IOException e) {
-                    System.err.println("Accept failed : ");
-                    e.printStackTrace();
+                    log.severe(e.getMessage());
                 }
             }
         };
@@ -77,7 +75,6 @@ class BaseSocket {
 
 
     protected void send(Serializable message, TAddress address) {
-        log.info("Prepping for send");
 
         if (_bindEndPointAddress == null) {
             throw new RuntimeException("Unexpected sending without an address to recieve a reply");
@@ -103,7 +100,6 @@ class BaseSocket {
     }
 
     protected TPacket receivePacket() {
-        log.info("Attempting to receive message");
         while (messageQueue.isEmpty()) {
             // waiting
             try {
@@ -112,7 +108,6 @@ class BaseSocket {
                 e.printStackTrace();
             }
         }
-        log.info("received packet");
         return messageQueue.poll();
 
     }

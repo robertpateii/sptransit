@@ -9,13 +9,10 @@ public class Client {
 
     public static void main(String[] args) {
         log = HelloLogger.setup("client");
-        log.info("Starting");
 
         Requestor server = new Requestor(log);
         server.connect("localhost", 8585);
-        log.info("Connected, attempting to send message");
         server.send("Hello"); // send takes only serializable objects
-        log.info("Sent Hello");
         /* context will receive any messages from this server into a queue,
             because of the implication */
         try {
@@ -24,7 +21,6 @@ public class Client {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        log.info("Done sleeping, waiting on reply");
         /* server.receive() will block if there's no messages yet */
         Serializable reply = server.receive();
         log.info("Received: " + reply.toString());
