@@ -11,13 +11,11 @@ public class Client {
         log = HelloLogger.setup("client");
         log.info("Starting");
 
-        TContext context = new TContext(log);
-        String msg = "Hello";
-        TSocket server = new TSocket(context);
+        Requestor server = new Requestor(log);
         server.connect("localhost", 8585);
         log.info("Connected, attempting to send message");
-        server.send(msg); // send takes only serializable objects
-        log.info("Sent: " + msg);
+        server.send("Hello"); // send takes only serializable objects
+        log.info("Sent Hello");
         /* context will receive any messages from this server into a queue,
             because of the implication */
         try {
