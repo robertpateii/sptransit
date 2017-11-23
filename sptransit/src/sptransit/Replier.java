@@ -9,7 +9,9 @@ public class Replier extends BaseSocket {
         super(log);
     }
 
-    // public void bind(String host, int port) is available from the super
+    public void bind(String host, int port) {
+        super.bind(host, port);
+    }
 
     public Serializable receive() {
         TPacket packet = super.receivePacket();

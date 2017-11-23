@@ -26,7 +26,7 @@ class BaseSocket {
      * @param host
      * @param port
      */
-    public void bind(String host, int port) {
+    protected void bind(String host, int port) {
         _bindEndPointAddress = new TAddress(host, port);
 
         Runnable serverRunner = new Runnable() {
@@ -121,10 +121,7 @@ class BaseSocket {
 
     }
 
-    /**
-     * @return
-     */
-    public boolean peek() {
+    protected boolean peek() {
         return !messageQueue.isEmpty();
     }
 }
