@@ -25,7 +25,6 @@ public class HelloLogger {
         fh.setFormatter(formatter);
         logger.addHandler(fh);
         logger.setLevel(Level.INFO);
-        logger.info("Logger setup!");
         return logger;
     }
 }
