@@ -86,7 +86,6 @@ class BaseSocket {
         try {
             Socket s = new Socket(address.getIPAddress(), address.getPort());
 
-            BufferedReader din = new BufferedReader(new InputStreamReader(s.getInputStream()));
             ObjectOutputStream pout = new ObjectOutputStream(s.getOutputStream());
 
             TPacket packet = new TPacket(message, _bindEndPointAddress);
@@ -94,9 +93,6 @@ class BaseSocket {
             pout.writeObject(packet);
             pout.flush();
             pout.close();
-
-            // TODO: see if this works with no din since we don't do anything with it
-            String retValue = din.readLine(); // scanner next time
 
             s.close();
         } catch (UnknownHostException e) {
