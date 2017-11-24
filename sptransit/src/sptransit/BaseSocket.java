@@ -23,8 +23,8 @@ class BaseSocket {
     /**
      * Servers bind to an address to open it and begin queuing messages
      *
-     * @param host
-     * @param port
+     * @param host publicly available ip/hostname to receive replies
+     * @param port can be 0 to use any free random port
      */
     protected void bind(String host, int port) {
         _bindEndPointAddress = new TAddress(host, port);
@@ -40,18 +40,18 @@ class BaseSocket {
                     //TODO : in a network this might not work, since the port has to be allowed thru the fire all,
                     //ip range might be the solution ... keep thinking
                     if (port == 0) {
-                        log.info("binding to a random port to incoming messages");
-                        _bindEndPointAddress.setPort(serverSocket.getLocalPort());
+                        int localPort = serverSocket.getLocalPort();
+                        _bindEndPointAddress.setPort(localPort);
+                        log.info("Listening on random client port " + localPort);
+                    } else {
+                        log.info("Listening on port " + port);
                     }
 
-                    log.info("Listening on port " + port);
 
-                    while (true) {
-                        Socket clientSocket = serverSocket.accept();
+                    Socket clientSocket;
+                    while ((clientSocket = serverSocket.accept()) != null) {
                         //TODO : this should create another thread not to block the server thread
                         ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-                        PrintWriter out =
-                                new PrintWriter(clientSocket.getOutputStream(), true);
                         TPacket packet;
                         try {
                             packet = (TPacket) in.readObject();
@@ -60,8 +60,7 @@ class BaseSocket {
                         } catch (ClassNotFoundException e) {
                             log.severe(e.getMessage());
                         }
-                        out.write("ACK");
-                        out.flush();
+                        in.close();
                         clientSocket.close();
                     }
                 } catch (IOException e) {
@@ -100,16 +99,11 @@ class BaseSocket {
     }
 
     protected TPacket receivePacket() {
-        while (messageQueue.isEmpty()) {
-            // waiting
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        TPacket packet;
+        while ((packet = messageQueue.poll()) == null) {
+            // keep looping, poll is atomic, non-blocking, and threadsafe
         }
-        return messageQueue.poll();
-
+        return packet;
     }
 
     protected boolean peek() {
