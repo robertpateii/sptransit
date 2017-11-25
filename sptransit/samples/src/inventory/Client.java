@@ -26,11 +26,13 @@ public class Client {
 
         System.out.println("Welcome to inventory service client");
         System.out.println("please enter one of these commands");
-        System.out.println("purchase <user-name> <product-name> <quantity>");
-        System.out.println("cancel <order-id>");
-        System.out.println("search <user-name>");
-        System.out.println("list");
-        System.out.println("q to quit");
+        String commandExamples = "purchase <user-name> <product-name> <quantity>" + System.lineSeparator() +
+        "cancel <order-id>" + System.lineSeparator() +
+        "search <user-name>" + System.lineSeparator() +
+        "list" + System.lineSeparator() +
+        "help for this list again" + System.lineSeparator() +
+        "q to quit";
+        System.out.println(commandExamples);
 
         while (true) {
             Scanner sc = new Scanner(System.in);
@@ -38,6 +40,8 @@ public class Client {
 
             if (commandType.equals("q")) {
                 break;
+            } else if (commandType.startsWith("h")) {
+               System.out.println(commandExamples);
             } else {
                 requestor.send(commandType + sc.nextLine());
                 String output = (String) requestor.receive();
