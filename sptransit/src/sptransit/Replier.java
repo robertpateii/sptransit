@@ -9,6 +9,10 @@ public class Replier extends BaseSocket {
         super(log);
     }
 
+    public Replier() {
+        super();
+    }
+
     public void bind(String host, int port) {
         super.bind(host, port);
     }

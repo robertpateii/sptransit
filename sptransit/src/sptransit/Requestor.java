@@ -10,6 +10,10 @@ public class Requestor extends BaseSocket {
         super(log);
     }
 
+    public Requestor() {
+        super();
+    }
+
     public void connect(String host, int port) {
         connectPoint = new TAddress(host, port);
         // clients will need a hidden listener server to get replies

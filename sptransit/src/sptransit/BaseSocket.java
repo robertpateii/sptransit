@@ -20,6 +20,11 @@ class BaseSocket {
         this.log = log;
     }
 
+    public BaseSocket() {
+        messageQueue = new ConcurrentLinkedQueue<>();
+        this.log = Logger.getAnonymousLogger();
+    }
+
     /**
      * Servers bind to an address to open it and begin queuing messages
      *
@@ -75,9 +80,12 @@ class BaseSocket {
 
     protected void send(Serializable message, TAddress address) {
 
+        log.info(String.format("Sending to %1$s:%2$s", address.getIPAddress(), address.getPort()));
+
         if (_bindEndPointAddress == null) {
             throw new RuntimeException("Unexpected sending without an address to recieve a reply");
         }
+        log.info(String.format("Endpoint is %1$s:%2$s", _bindEndPointAddress.getIPAddress(), _bindEndPointAddress.getPort()));
 
         try {
             Socket s = new Socket(address.getIPAddress(), address.getPort());
