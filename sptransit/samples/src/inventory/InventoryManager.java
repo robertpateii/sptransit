@@ -41,9 +41,17 @@ public class InventoryManager {
     }
 
     private synchronized static String orderPurchase(String[] options) {
+        if (options.length != 4) {
+            return "Invalid purchase: " + Arrays.toString(options);
+        }
         String username = options[1];
         String product = options[2];
-        int quantity = Integer.parseInt(options[3]);
+        int quantity;
+        try {
+            quantity = Integer.parseInt(options[3]);
+        } catch (NumberFormatException e) {
+            return "Invalid amount: " + options[3];
+        }
 
         if (!productInventory.containsKey(product)) {
             return "Not Available - We do not sell this product";
@@ -60,7 +68,15 @@ public class InventoryManager {
     }
 
     private synchronized static String orderCancel(String[] options) {
-        int orderid = Integer.parseInt((options[1]));
+        if (options.length != 2) {
+            return "Invalid order cancellation: " + Arrays.toString(options);
+        }
+        int orderid;
+        try {
+            orderid = Integer.parseInt((options[1]));
+        } catch (NumberFormatException e) {
+            return "Invalid order number: " + options[1];
+        }
         ProductOrder order = findByOrderId(orderid);
         if (order == null) {
             return orderid + " not found, no such order";
@@ -72,17 +88,24 @@ public class InventoryManager {
     }
 
     private synchronized static String userSearch(String[] options) {
+        if (options.length != 2) {
+            return "Invalid search: " + Arrays.toString(options);
+        }
         String userName = options[1];
         String orderList = "";
         for (int i = 0; i < orders.size(); i++) {
             if (((ProductOrder) orders.get(i)).getUsername().equals(userName)) {
-                orderList += "\n " + ((ProductOrder) orders.get(i)).getOrderId()
+                orderList += System.lineSeparator() + ((ProductOrder) orders.get(i)).getOrderId()
                         + ", "
                         + ((ProductOrder) orders.get(i)).getProduct() + ", "
                         + ((ProductOrder) orders.get(i)).getQuantity();
             }
         }
-        return orderList;
+        if (orderList == "") {
+            return "No orders found for " + userName;
+        } else {
+            return orderList;
+        }
     }
 
     private synchronized static String getList(String[] options) {
@@ -97,7 +120,7 @@ public class InventoryManager {
                 product = iterator.next();
                 count = productInventory.get(product);
                 // I tried to get the System.lineSeparator to work but no luck
-                list += "-" + product + " " + count;
+                list += System.lineSeparator() + product + " " + count;
             }
             return list;
         } else {
