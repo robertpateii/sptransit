@@ -39,7 +39,7 @@ public class Client {
             if (commandType.equals("q")) {
                 break;
             } else {
-                requestor.send(commandType + " " + sc.nextLine());
+                requestor.send(commandType + sc.nextLine());
                 String output = (String) requestor.receive();
                 System.out.println(output);
             }
