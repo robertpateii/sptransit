@@ -35,7 +35,6 @@ public class CausalSocket extends BaseSocket {
         try {
             Socket s = new Socket(_connectEndPointAddress.getIPAddress(), _connectEndPointAddress.getPort());
 
-            BufferedReader din = new BufferedReader(new InputStreamReader(s.getInputStream()));
             ObjectOutputStream pout = new ObjectOutputStream(s.getOutputStream());
 
             M[getPid(_bindEndPointAddress)][getPid(_connectEndPointAddress)]++;
@@ -44,9 +43,6 @@ public class CausalSocket extends BaseSocket {
             pout.writeObject(cpacket);
             pout.flush();
             pout.close();
-
-            // TODO: see if this works with no din since we don't do anything with it
-            String retValue = din.readLine(); // scanner next time
 
             s.close();
         } catch (UnknownHostException e) {
@@ -61,10 +57,22 @@ public class CausalSocket extends BaseSocket {
     boolean okayToRecv(int w[][], int srcId) {
         int myId = getPid(_bindEndPointAddress);
 
-        if (w[srcId][myId] > M[srcId][myId] + 1) return false;
+        // incoming matrix should be exactly one ahead for me
+        if (w[srcId][myId] > M[srcId][myId] + 1) {
+            return false;
+        }
 
+        // do any other processes know about any messages sent to me that i do not?
+        // their count of messages sent to me should be equal or lesser than mine
         for (int k = 0; k < N; k++) {
-            if ((k != srcId) && (w[k][myId] > M[k][myId])) return false;
+            // TODO: This is probably where the logic is failing to order causally
+            if (k != srcId) { // skip my vector we already tested it
+                int theirCount = w[k][myId];
+                int myCount = M[k][myId];
+                if (theirCount > myCount) {
+                    return false;
+                }
+            }
         }
 
         return true;
@@ -72,6 +80,8 @@ public class CausalSocket extends BaseSocket {
 
     //causal algorithm method
     void checkPendingQ() {
+        // TODO: should we copy over the code for this?
+        // TODO: also is it ok to loop on this syrchonized message queue?
         Iterator iter = messageQueue.iterator();
         while (iter.hasNext()) {
             CausalPacket cp = (CausalPacket) iter.next();
@@ -83,18 +93,11 @@ public class CausalSocket extends BaseSocket {
     }
 
     //causal ordering specific implementation
-    public Object receive() {
-        log.info("Attempting to receive message");
-        checkPendingQ();
+    public Serializable receive() {
         while (deliveryQ.isEmpty()) {
-            // waiting
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            // TODO: just because deliveryQ was not empty above doesn't mean it's still not empty now because threads
+            checkPendingQ();
         }
-        log.info("received packet");
         CausalPacket packet = (CausalPacket) deliveryQ.pollFirst();
         setMax(M, packet.W);
         return packet.message;

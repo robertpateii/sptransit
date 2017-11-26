@@ -32,6 +32,8 @@ class BaseSocket {
      * @param port can be 0 to use any free random port
      */
     protected void bind(String host, int port) {
+        // TODO: bind should only be called once per socket otherwise bindEndPointAddress gets overwritten
+        // bundle it into the constructors for the sockets that need it (all of them except requestor?)
         _bindEndPointAddress = new TAddress(host, port);
 
         Runnable serverRunner = new Runnable() {
@@ -55,18 +57,8 @@ class BaseSocket {
 
                     Socket clientSocket;
                     while ((clientSocket = serverSocket.accept()) != null) {
-                        //TODO : this should create another thread not to block the server thread
-                        ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-                        TPacket packet;
-                        try {
-                            packet = (TPacket) in.readObject();
-                            messageQueue.add(packet);
-
-                        } catch (ClassNotFoundException e) {
-                            log.severe(e.getMessage());
-                        }
-                        in.close();
-                        clientSocket.close();
+                        Thread t = new ClientRunner(clientSocket, log, messageQueue);
+                        t.start();
                     }
                 } catch (IOException e) {
                     log.severe(e.getMessage());
@@ -77,6 +69,26 @@ class BaseSocket {
         _serverRunnerThread.start();
     }
 
+    protected void sendOneWay(Serializable message, TAddress address) {
+        log.info(String.format("Sending to %1$s:%2$s", address.getIPAddress(), address.getPort()));
+        try {
+            Socket s = new Socket(address.getIPAddress(), address.getPort());
+
+            ObjectOutputStream pout = new ObjectOutputStream(s.getOutputStream());
+
+            TPacket packet = new TPacket(message, null);
+
+            pout.writeObject(packet);
+            pout.flush();
+            pout.close();
+
+            s.close();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+    }
 
     protected void send(Serializable message, TAddress address) {
 

@@ -1,11 +1,11 @@
 package hello;
 
-import sptransit.CausalSocket;
+import sptransit.PushSocket;
 
 import java.io.IOException;
 import java.util.Scanner;
 
-public class CausalOrderTest {
+public class CausalOrderCounterTest {
     private static java.util.logging.Logger log;
 
     /*
@@ -18,56 +18,52 @@ public class CausalOrderTest {
         Scanner in = new Scanner(System.in);
         int num = in.nextInt();
         try {
-            int servercount = 3;
             switch (num) {
                 case 1:
                     log = HelloLogger.setup("server1");
 
-                    CausalSocket causalSocket1 = new CausalSocket(log, servercount);
-                    causalSocket1.bind("localhost", 6000);
+                    PushSocket pushSocket1 = new PushSocket(log);
+                    pushSocket1.bind("localhost", 6000);
 
                     System.out.println("Waiting for all servers to come online");
                     System.out.println("Press enter to continue once all server are up");
                     System.in.read();
 
-                    causalSocket1.connect("localhost", 6001);
-                    causalSocket1.send("Hi from p1 -> p2");
+                    pushSocket1.send("Hi from p1 -> p2", "localhost", 6001);
 
-                    causalSocket1.connect("localhost", 6002);
                     // the problem is this gets to p3 after p1->p2 and p2->p3
-                    causalSocket1.send("Hi from p1 -> p3 (causally first for p3)");
+                    // the tcp socket in bind will delay this for us
+                    pushSocket1.send("Hi from p1 -> p3 (causally first for p3)", "localhost", 6002);
 
                     break;
                 case 2:
                     log = HelloLogger.setup("server2");
 
-                    CausalSocket causalSocket2 = new CausalSocket(log, servercount);
-                    causalSocket2.bind("localhost", 6001);
+                    PushSocket pushSocket2 = new PushSocket(log);
+                    pushSocket2.bind("localhost", 6001);
 
-                    System.out.println("Received +++ " +causalSocket2.receive());
+                    System.out.println("Received +++ " +pushSocket2.receive());
 
-                    causalSocket2.connect("localhost", 6002);
                     // the problem is this gets to p3 before p1s message to p3
-                    causalSocket2.send("Hi from p2 -> p3 (causally second for p3)");
+                    pushSocket2.send("Hi from p2 -> p3 (causally second for p3)", "localhost", 6002);
 
                     System.out.println("Press enter to send p2's second message to p3");
                     System.in.read();
 
-                    causalSocket2.connect("localhost", 6002);
-                    causalSocket2.send("Hi from p2 -> p3");
+                    pushSocket2.send("Hi from p2 -> p3", "localhost", 6002);
 
-                    System.out.println("Received +++ " +causalSocket2.receive());
+                    System.out.println("Received +++ " +pushSocket2.receive());
 
                     break;
                 case 3:
                     log = HelloLogger.setup("server3");
 
-                    CausalSocket causalSocket3 = new CausalSocket(log, servercount);
-                    causalSocket3.bind("localhost", 6002);
+                    PushSocket pushSocket3 = new PushSocket(log);
+                    pushSocket3.bind("localhost", 6002);
 
-                    System.out.println("Received +++ " +causalSocket3.receive());
-                    System.out.println("Received +++ " +causalSocket3.receive());
-                    System.out.println("Received +++ " +causalSocket3.receive());
+                    System.out.println("Received +++ " +pushSocket3.receive());
+                    System.out.println("Received +++ " +pushSocket3.receive());
+                    System.out.println("Received +++ " +pushSocket3.receive());
 
                     break;
             }
