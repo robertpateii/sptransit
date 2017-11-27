@@ -29,11 +29,12 @@ public class CausalOrderCounterTest {
                     System.out.println("Press enter to continue once all server are up");
                     System.in.read();
 
-                    pushSocket1.send("Hi from p1 -> p2", "localhost", 6001);
 
                     // the problem is this gets to p3 after p1->p2 and p2->p3
                     // the tcp socket in bind will delay this for us
                     pushSocket1.send("Hi from p1 -> p3 (causally first for p3)", "localhost", 6002);
+
+                    pushSocket1.send("Hi from p1 -> p2", "localhost", 6001);
 
                     break;
                 case 2:

@@ -30,12 +30,14 @@ public class CausalOrderTest {
                     System.out.println("Press enter to continue once all server are up");
                     System.in.read();
 
-                    causalSocket1.connect("localhost", 6001);
-                    causalSocket1.send("Hi from p1 -> p2");
 
                     causalSocket1.connect("localhost", 6002);
                     // the problem is this gets to p3 after p1->p2 and p2->p3
                     causalSocket1.send("Hi from p1 -> p3 (causally first for p3)");
+
+
+                    causalSocket1.connect("localhost", 6001);
+                    causalSocket1.send("Hi from p1 -> p2");
 
                     break;
                 case 2:
