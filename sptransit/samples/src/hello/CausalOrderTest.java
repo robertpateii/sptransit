@@ -1,8 +1,10 @@
 package hello;
 
+import sptransit.CausalParticipant;
 import sptransit.CausalSocket;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CausalOrderTest {
@@ -16,6 +18,13 @@ public class CausalOrderTest {
     public static void main(String[] args) throws IOException {
         System.out.println("Enter Server # to start");
         Scanner in = new Scanner(System.in);
+
+        //these can be read from a file or any source
+        ArrayList<CausalParticipant> participants = new ArrayList<>();
+        participants.add(new CausalParticipant("localhost",6000,0));
+        participants.add(new CausalParticipant("localhost",6001,1));
+        participants.add(new CausalParticipant("localhost",6002,2));
+
         int num = in.nextInt();
         try {
             int servercount = 3;
@@ -23,7 +32,7 @@ public class CausalOrderTest {
                 case 1:
                     log = HelloLogger.setup("server1");
 
-                    CausalSocket causalSocket1 = new CausalSocket(log, servercount);
+                    CausalSocket causalSocket1 = new CausalSocket(log, servercount,participants);
                     causalSocket1.bind("localhost", 6000);
 
                     System.out.println("Waiting for all servers to come online");
@@ -43,7 +52,7 @@ public class CausalOrderTest {
                 case 2:
                     log = HelloLogger.setup("server2");
 
-                    CausalSocket causalSocket2 = new CausalSocket(log, servercount);
+                    CausalSocket causalSocket2 = new CausalSocket(log, servercount,participants);
                     causalSocket2.bind("localhost", 6001);
 
                     System.out.println("Received +++ " +causalSocket2.receive());
@@ -64,7 +73,7 @@ public class CausalOrderTest {
                 case 3:
                     log = HelloLogger.setup("server3");
 
-                    CausalSocket causalSocket3 = new CausalSocket(log, servercount);
+                    CausalSocket causalSocket3 = new CausalSocket(log, servercount,participants);
                     causalSocket3.bind("localhost", 6002);
 
                     System.out.println("Received +++ " +causalSocket3.receive());

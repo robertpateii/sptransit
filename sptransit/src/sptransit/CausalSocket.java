@@ -3,6 +3,7 @@ package sptransit;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -13,13 +14,15 @@ public class CausalSocket extends BaseSocket {
     int N;
     LinkedList deliveryQ = new LinkedList();
     ConcurrentLinkedQueue<CausalPacket> orderMessages;
+    ArrayList<CausalParticipant> participants;
 
-    public CausalSocket(Logger log, int n) {
+    public CausalSocket(Logger log, int n, ArrayList<CausalParticipant> participants) {
         super(log);
         N = n;
         M = new int[N][N];
         setZero(M);
         orderMessages = new ConcurrentLinkedQueue<>();
+        this.participants = participants;
     }
 
     //TODO : these are added from the server to keep both send/receive methods on the same socket, discuss this!!
@@ -65,7 +68,6 @@ public class CausalSocket extends BaseSocket {
         // do any other processes know about any messages sent to me that i do not?
         // their count of messages sent to me should be equal or lesser than mine
         for (int k = 0; k < N; k++) {
-            // TODO: This is probably where the logic is failing to order causally
             if (k != srcId) { // skip my vector we already tested it
                 int theirCount = w[k][myId];
                 int myCount = M[k][myId];
@@ -121,9 +123,15 @@ public class CausalSocket extends BaseSocket {
         }
     }
 
-    //TODO think of a way that can be shared across processes where servers can have a designated index (I think like hw2)
     //at this time it just assumes that you are creating servers starting port# 6000, very bad just for testing!!!!
     int getPid(TAddress address) {
-        return address.getPort() - 6000;
+        for(int i =0 ;i<participants.size();i++)
+        {
+            if(participants.get(i).getPort().equals(address.getPort())
+                    && participants.get(i).getIPAddress().equals(address.getIPAddress()))
+                return participants.get(i).getPid();
+        }
+
+        return -1;
     }
 }
