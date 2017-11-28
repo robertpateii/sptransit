@@ -3,8 +3,10 @@
 
 \documentclass[twoside]{article}
 \usepackage{graphics}
+\usepackage{tikz}
 \usepackage{amsmath}
 \usepackage{hyperref}
+
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
@@ -20,6 +22,7 @@
 \setlength{\headsep}{0.75 in}
 \setlength{\parindent}{0 in}
 \setlength{\parskip}{0.1 in}
+\graphicspath{{images/}}
 
 \newcommand{\HRule}{\rule{\linewidth}{0.4mm}}
 
@@ -63,6 +66,43 @@ All this is over TCP so we know whether or not a message is actually received. W
 \item No stream support, only message passing
 \end{enumerate}
 
+\subsection{Socket Wrapper}
+
+At the core of the package, it utilizes a native TCP socket coupled with a simple queue data structure. the diagram below shows the typical flow of messages between two programs when using this package.
+
+\begin{center}
+    \includegraphics[width=0.9\textwidth]{spTransit.png}
+    
+    \fig 1 {Complete message send receive cycle}
+\end{center}
+
+Although it all depends on the mode of communication you are trying to create between you application, the complete message cycle ,from sending a message to an other process and accepting a response message, will go through these steps
+
+\begin{itemize}
+
+\item when a BaseSocket implementation is instantiated, it creates a queue ready to buffer messages
+
+\item when the consuming code binds the socket to a specific host/port then the BaseSockets will open that port in a separate thread and starts listening on it.
+
+
+\item then when the consuming code sends a message (any serializable object) to another program, it opens a socket to the destination, sends the message and closes the socket.
+
+\item when a message is sent to this socket, it is pushed to message queue and kept there till the consuming program decides to do something about it.
+
+\item And at any point in the program execution, the consuming code can check on the message queue to receive the message that is ready to be delivered.
+\end{itemize}
+
+This base socket can be used to send any serializable object. Before sending the object, in the base implementation the actual message body is wrapped by a TPackage class. This class, in addition to the object is holds the source of the message information, so that it is possible for the receiver to send a reply back to this socket.
+
+\subsection{Causal Order Socket Implementation}
+One of the classes that extend the Base Socket described above is the causal order socket implementation. Since received messages are buffered in a message queue, that approach had made it natural to extend it to create a class that can be used to enforce a causal order delivery of messages.
+
+The base socket is extended to add a new queue to hold messages are that are ready to be delivered. A data structure to hold a list of participating programs is also added to this socket implementation to build and maintain the matrix containing counts of messages that are sent between a given program and another. Instead of the normal TPacket class used in the BaseSocket to wrap the message,a derived class (CausalPacket) containing  a matrix data structure to go with each message is used.
+
+The algorithm to ensure message causal order is embedded with in the causal socket's receive method to make the determination on what order to deliver the messages to each programs.
+
+Note : for testing purposes, in order for us to simulate the a message being out of order in causal sense, we have added some hard coded messages that are accepted at the TCP level in a delayed manner.
+
 \subsection{Client Functions}
 \begin{enumerate}
     \item Clients can send a message to a server
@@ -73,7 +113,7 @@ All this is over TCP so we know whether or not a message is actually received. W
 
 \subsection{Server Functions}
 \begin{enumerate}
-    \item 
+    \item java get
 \end{enumerate}
 
 \subsection{Context Functions}
