@@ -1,47 +1,320 @@
-% This is the LaTeX template file for lecture notes for EE 382C/EE 361C/EE 382N/etc.
-% This template is based on the template for Prof. Sinclair's CS 270.
 
-\documentclass[twoside]{article}
-\usepackage{graphics}
-\usepackage{tikz}
-\usepackage{amsmath}
+%% bare_jrnl_compsoc.tex
+%% V1.4b
+%% 2015/08/26
+%% by Michael Shell
+%% See:
+%% http://www.michaelshell.org/
+%% for current contact information.
+%%
+%% This is a skeleton file demonstrating the use of IEEEtran.cls
+%% (requires IEEEtran.cls version 1.8b or later) with an IEEE
+%% Computer Society journal paper.
+%%
+%% Support sites:
+%% http://www.michaelshell.org/tex/ieeetran/
+%% http://www.ctan.org/pkg/ieeetran
+%% and
+%% http://www.ieee.org/
+
+%%*************************************************************************
+%% Legal Notice:
+%% This code is offered as-is without any warranty either expressed or
+%% implied; without even the implied warranty of MERCHANTABILITY or
+%% FITNESS FOR A PARTICULAR PURPOSE! 
+%% User assumes all risk.
+%% In no event shall the IEEE or any contributor to this code be liable for
+%% any damages or losses, including, but not limited to, incidental,
+%% consequential, or any other damages, resulting from the use or misuse
+%% of any information contained here.
+%%
+%% All comments are the opinions of their respective authors and are not
+%% necessarily endorsed by the IEEE.
+%%
+%% This work is distributed under the LaTeX Project Public License (LPPL)
+%% ( http://www.latex-project.org/ ) version 1.3, and may be freely used,
+%% distributed and modified. A copy of the LPPL, version 1.3, is included
+%% in the base LaTeX documentation of all distributions of LaTeX released
+%% 2003/12/01 or later.
+%% Retain all contribution notices and credits.
+%% ** Modified files should be clearly indicated as such, including  **
+%% ** renaming them and changing author support contact information. **
+%%*************************************************************************
+
+
+% *** Authors should verify (and, if needed, correct) their LaTeX system  ***
+% *** with the testflow diagnostic prior to trusting their LaTeX platform ***
+% *** with production work. The IEEE's font choices and paper sizes can   ***
+% *** trigger bugs that do not appear when using other class files.       ***                          ***
+% The testflow support page is at:
+% http://www.michaelshell.org/tex/testflow/
+
+
+\documentclass[10pt,journal,compsoc]{IEEEtran}
+
+
+
+
+% *** CITATION PACKAGES ***
+%
+\ifCLASSOPTIONcompsoc
+  % IEEE Computer Society needs nocompress option
+  % requires cite.sty v4.0 or later (November 2003)
+  \usepackage[nocompress]{cite}
+\else
+  % normal IEEE
+  \usepackage{cite}
+\fi
+% cite.sty was written by Donald Arseneau
+% V1.6 and later of IEEEtran pre-defines the format of the cite.sty package
+% \cite{} output to follow that of the IEEE. Loading the cite package will
+% result in citation numbers being automatically sorted and properly
+% "compressed/ranged". e.g., [1], [9], [2], [7], [5], [6] without using
+% cite.sty will become [1], [2], [5]--[7], [9] using cite.sty. cite.sty's
+% \cite will automatically add leading space, if needed. Use cite.sty's
+% noadjust option (cite.sty V3.8 and later) if you want to turn this off
+% such as if a citation ever needs to be enclosed in parenthesis.
+% cite.sty is already installed on most LaTeX systems. Be sure and use
+% version 5.0 (2009-03-20) and later if using hyperref.sty.
+% The latest version can be obtained at:
+% http://www.ctan.org/pkg/cite
+% The documentation is contained in the cite.sty file itself.
+%
+% Note that some packages require special options to format as the Computer
+% Society requires. In particular, Computer Society  papers do not use
+% compressed citation ranges as is done in typical IEEE papers
+% (e.g., [1]-[4]). Instead, they list every citation separately in order
+% (e.g., [1], [2], [3], [4]). To get the latter we need to load the cite
+% package with the nocompress option which is supported by cite.sty v4.0
+% and later. Note also the use of a CLASSOPTION conditional provided by
+% IEEEtran.cls V1.7 and later.
+
+
+
+
+
+% *** GRAPHICS RELATED PACKAGES ***
+%
+\ifCLASSINFOpdf
+   \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+   \graphicspath{{images/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+   \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  % \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+
+
+
+
+
+
+% *** MATH PACKAGES ***
+%
+%\usepackage{amsmath}
+% A popular package from the American Mathematical Society that provides
+% many useful and powerful commands for dealing with mathematics.
+%
+% Note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+%\interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally
+% does. amsmath.sty is already installed on most LaTeX systems. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/pkg/amsmath
+
+
+
+
+
+% *** SPECIALIZED LIST PACKAGES ***
+%
+%\usepackage{algorithmic}
+% algorithmic.sty was written by Peter Williams and Rogerio Brito.
+% This package provides an algorithmic environment fo describing algorithms.
+% You can use the algorithmic environment in-text or within a figure
+% environment to provide for a floating algorithm. Do NOT use the algorithm
+% floating environment provided by algorithm.sty (by the same authors) or
+% algorithm2e.sty (by Christophe Fiorio) as the IEEE does not use dedicated
+% algorithm float types and packages that provide these will not provide
+% correct IEEE style captions. The latest version and documentation of
+% algorithmic.sty can be obtained at:
+% http://www.ctan.org/pkg/algorithms
+% Also of interest may be the (relatively newer and more customizable)
+% algorithmicx.sty package by Szasz Janos:
+% http://www.ctan.org/pkg/algorithmicx
+
+
+
+
+% *** ALIGNMENT PACKAGES ***
+%
+%\usepackage{array}
+% Frank Mittelbach's and David Carlisle's array.sty patches and improves
+% the standard LaTeX2e array and tabular environments to provide better
+% appearance and additional user controls. As the default LaTeX2e table
+% generation code is lacking to the point of almost being broken with
+% respect to the quality of the end results, all users are strongly
+% advised to use an enhanced (at the very least that provided by array.sty)
+% set of table tools. array.sty is already installed on most systems. The
+% latest version and documentation can be obtained at:
+% http://www.ctan.org/pkg/array
+
+
+% IEEEtran contains the IEEEeqnarray family of commands that can be used to
+% generate multiline equations as well as matrices, tables, etc., of high
+% quality.
+
+
+
+
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+%
 \usepackage{hyperref}
 
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,      
-    urlcolor=cyan,
-}
-\urlstyle{same}
-\setlength{\oddsidemargin}{0.25 in}
-\setlength{\evensidemargin}{0.25 in}
-\setlength{\topmargin}{-0.6 in}
-\setlength{\textwidth}{6.5 in}
-\setlength{\textheight}{8.5 in}
-\setlength{\headsep}{0.75 in}
-\setlength{\parindent}{0 in}
-\setlength{\parskip}{0.1 in}
-\graphicspath{{images/}}
+% Code formatting
+\usepackage{listings}
 
-\newcommand{\HRule}{\rule{\linewidth}{0.4mm}}
 
-\title{Term Project: Package for Controlling Delivery of Messages}
-\author{Samuel Cherinet and Robert Pate }
-\date{November 2017}
+% *** Do not adjust lengths that control margins, column widths, etc. ***
+% *** Do not use packages that alter fonts (such as pslatex).         ***
+% There should be no need to do such things with IEEEtran.cls V1.6 and later.
+% (Unless specifically asked to do so by the journal or conference you plan
+% to submit to, of course. )
+
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
 
 \begin{document}
+%
+% paper title
+% Titles are generally capitalized except for words such as a, an, and, as,
+% at, but, by, for, in, nor, of, on, or, the, to and up, which are usually
+% not capitalized unless they are the first or last word of the title.
+% Linebreaks \\ can be used within to get better formatting as desired.
+% Do not put math or special symbols in the title.
+
+\title{sptransit: a Package for Controlling Delivery of Messages}
+
+\author{Samuel~Cherinet,
+        Robert~Pate~II
+        % <-this % stops a space
+\IEEEcompsocitemizethanks{
+\IEEEcompsocthanksitem Students at University of Texas at Austin
+
+% note need leading \protect in front of \\ to get a newline within \thanks as
+% \\ is fragile and will error, could use \hfil\break instead.
+\IEEEcompsocthanksitem \url{http://samcherinet.com}
+\IEEEcompsocthanksitem \url{http://robertpate.net}
+\IEEEcompsocthanksitem Source: \url{https://github.com/robertpateii/sptransit}
+}% <-this % stops an unwanted space
+\thanks{Manuscript delivered December 1, 2017.}}
+
+
+
+% The paper headers
+\markboth{Distributed Systems Fall 2017 Term Project}%
+{Shell \MakeLowercase{\textit{et al.}}: sptransit: a Package for Controlling Delivery of Messages}
+% The only time the second header will appear is for the odd numbered pages
+% after the title page when using the twoside option.
+% 
+
+% for Computer Society papers, we must declare the abstract and index terms
+% PRIOR to the title within the \IEEEtitleabstractindextext IEEEtran
+% command as these need to go into the title area created by \maketitle.
+% As a general rule, do not put math, special symbols or citations
+% in the abstract or keywords.
+\IEEEtitleabstractindextext{%
+\begin{abstract}
+
+sptransit is a package that allows a programmer to specify and control delivery of messages in a distributed program.
+
+\end{abstract}
+
+% Note that keywords are not normally used for peerreview papers.
+%\begin{IEEEkeywords}Computer Society, IEEE, IEEEtran, journal, \LaTeX, paper, template.\end{IEEEkeywords}
+}
+
+
+% make the title area
 \maketitle
-\HRule
 
-\section{Goal and Use Case}
 
-"Design and implement a package that allows a programmer to specify and control delivery of messages in a distributed program."
+% To allow for easy dual compilation without having to reenter the
+% abstract/keywords data, the \IEEEtitleabstractindextext text will
+% not be used in maketitle, but will appear (i.e., to be "transported")
+% here as \IEEEdisplaynontitleabstractindextext when the compsoc 
+% or transmag modes are not selected <OR> if conference mode is selected 
+% - because all conference papers position the abstract like regular
+% papers do.
+\IEEEdisplaynontitleabstractindextext
+% \IEEEdisplaynontitleabstractindextext has no effect when using
+% compsoc or transmag under a non-conference mode.
 
-As an application developer, I need different instances of my distributed application to communicate with each other. I want to import a package into my code that lets me do that seamlessly with a few commands.
 
-\section{Description}
 
+% For peerreview papers, this IEEEtran command inserts a page break and
+% creates the second title. It will be ignored for other modes.
+\IEEEpeerreviewmaketitle
+
+
+
+\IEEEraisesectionheading{\section{Introduction}\label{sec:introduction}}
+% Computer Society journal (but not conference!) papers do something unusual
+% with the very first section heading (almost always called "Introduction").
+% They place it ABOVE the main text! IEEEtran.cls does not automatically do
+% this for you, but you can achieve this effect with the provided
+% \IEEEraisesectionheading{} command. Note the need to keep any \label that
+% is to refer to the section immediately after \section in the above as
+% \IEEEraisesectionheading puts \section within a raised box.
+
+
+
+
+% The very first letter is a 2 line initial drop letter followed
+% by the rest of the first word in caps (small caps for compsoc).
+% 
+% form to use if the first word consists of a single letter:
+% \IEEEPARstart{A}{demo} file is ....
+% 
+% form to use if you need the single drop letter followed by
+% normal text (unknown if ever used by the IEEE):
+% \IEEEPARstart{A}{}demo file is ....
+% 
+% Some journals put the first two words in caps:
+% \IEEEPARstart{T}{his demo} file is ....
+% 
+% Here we have the typical use of a "T" for an initial drop letter
+% and "HIS" in caps to complete the first word.
+\IEEEPARstart{T}{his} project will satisfy the assignment to "design and implement a package that allows a programmer to specify and control delivery of messages in a distributed program."
+
+% You must have at least 2 lines in the paragraph with the drop letter
+% (should never be an issue)
+
+%\hfill mds
+ 
+%\hfill August 26, 2015
+
+\subsection{Use Case}
+As a distributed application developer, I need different instances of my distributed application to communicate with each other. I want to import a package into my code that lets me do that seamlessly with a few commands.
+
+% needed in second column of first page if using \IEEEpubid
+%\IEEEpubidadjcol
+
+\subsubsection{Description}
 Transit is package for controlling distribution of messages between java programs. The user can choose to use it asynchronously or synchronously as Transit asynchronously sends and receives messages into a queue.
 
 In a typical hello world from a client to the server, the user will create a new context for Transit and connect to a server by IP and port. Connecting to the server doesn't block anything, it is a convenient way to set the target server for all the following messages. 
@@ -51,8 +324,6 @@ Next the client sends a message. The Transit context on the client will add onto
 The server acts like a UDP server, listening for clients, spinning off a thread to deal with them, and storing the clients reply-to information for later reply. This is all in the context though, the user will simply be iterating over a queue of expected messages.
 
 All this is over TCP so we know whether or not a message is actually received. What we don't know is if the user intends a given message to have a reply or if it was just one way. This and the object type of the message is up to the user.
-
-
 
 
 \section{Functions and Restrictions}
@@ -66,17 +337,75 @@ All this is over TCP so we know whether or not a message is actually received. W
 \item No stream support, only message passing
 \end{enumerate}
 
-\subsection{Socket Wrapper}
 
-At the core of the package, it utilizes a native TCP socket coupled with a simple queue data structure. the diagram below shows the typical flow of messages between two programs when using this package.
+\subsection{Client Request/Reply Functions}
+\begin{enumerate}
+    \item Clients connect to a single server using the Requestor class
+    \item Clients send a single request message to that server
+    \item Clients can proceed without holding open a stream or a socket
+    \item Clients eventually call receive to wait for the reply
+    \item Clients can send another request message to the server
+    \item Clients can connect to a different server by using the same Requestor to connect to a new one
+    \item Clients can have multiple Requestor objects connecting to different servers
+\end{enumerate}
 
-\begin{center}
-    \includegraphics[width=0.9\textwidth]{spTransit.png}
-    
-    \fig 1 {Complete message send receive cycle}
-\end{center}
+\subsection{Server Request/Reply Functions}
+\begin{enumerate}
+    \item Servers bind a new Replier object to a IP and port
+    \item Servers can receive when ready to block for incoming messages
+    \item Servers can reply back to the sender client of the last message
+    \item Servers can receive again and reply again to various clients
+    \item Servers can process other items between receives without losing messages
+\end{enumerate}
 
-Although it all depends on the mode of communication you are trying to create between you application, the complete message cycle ,from sending a message to an other process and accepting a response message, will go through these steps
+\subsection{Server Push/Receive Functions}
+\begin{enumerate}
+    \item Servers can send one-way messages to other servers by IP and port
+    \item Servers can block until receiving a message when ready
+    \item Servers can push out as many messages to various servers as needed without blocking the receipt of messages in the background
+    \item Servers do not know the sender of the message in this pattern unless the package user provides it in their message
+\end{enumerate}
+
+\subsection{Server Causal Messaging Functions}
+\begin{enumerate}
+    \item Servers can send a sequence of message to multiple servers
+    \item Servers can receive messages in any order from all servers 
+    in their topology
+    \item Server then causally order messages and deliver them to 
+    consuming application
+    \item When messages are received out of order (causally), the server
+    waits until the right message arrives to deliver to the application
+\end{enumerate}
+
+\subsection{Sample Library}
+\begin{enumerate}
+    \item hello.Client connects, sends a message, and prints the reply
+    \item hello.Server binds to a port, waits for a message, and replies to the sender
+    \item hello.CausalOrderCounterTest shows a simulated network delay causes messages to arrive out of order
+    \item hello.CausalOrderTest overcomes the simulated network delay to deliver messages in causal order
+    \item inventory.Server takes inventory management commands from many clients
+    \item inventory.Client sends inventory commands to the server
+    \item reservations.Server takes seat reservations and mirrors them to other servers without the sptransit package as a comparison and exercise for the reader
+\end{enumerate}
+
+\section{Implementation Details}
+
+
+\subsection{Socket Wrapper Diagram}
+
+At the core of the package, it utilizes a native TCP socket coupled with a simple queue data structure. \emph{Figure 1} shows the typical flow of messages between two programs when using this package.
+
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.9\textwidth]{images/spTransit.png}
+\caption{Complete message send receive cycle}
+\label{fig_sim}
+\end{figure*}
+
+
+
+Although it all depends on the mode of communication you are trying to create between you application, the complete message cycle, from sending a message to an other process and accepting a response message, will go through these steps
 
 \begin{itemize}
 
@@ -94,58 +423,440 @@ Although it all depends on the mode of communication you are trying to create be
 
 This base socket can be used to send any serializable object. Before sending the object, in the base implementation the actual message body is wrapped by a TPackage class. This class, in addition to the object is holds the source of the message information, so that it is possible for the receiver to send a reply back to this socket.
 
+The class signature for the base socket that is use by all modes of communication would look like this:
+\begin{lstlisting}
+class BaseSocket {
+
+TAddress _bindEndPointAddress;
+TAddress _connectEndPointAddress;
+Thread _serverRunnerThread;
+ConcurrentLinkedQueue<TPacket> messageQueue;
+
+...
+
+void bind(String host, int port)
+void sendOneWay(Serializable message
+    , TAddress address)
+void send(Serializable message
+    , TAddress address)
+TPacket receivePacket()
+boolean peek()
+
+...
+
+}
+
+\end{lstlisting}
+
+
+The functions are pretty self explanatory.The bind function is used to by extending classes to open a TCP socket and start listening for message. The send methods are used to send messages to another host, the main difference between the two implementation is that the the sendOneWay method is used to send a fire and forget kind of message, where we don't expect a message back from the recipient. Where as in a simple send case, if the the binding is not set up, Transit would automatically pick an available port address and bind to it.
+
+\subsection{Shared Supporting Classes}
+
+\paragraph{TPacket}
+The TPacket class is critical to the Request/Reply mode since the Requestor will bundle its return IP address and port into the packet. This isn't visible to the user as they only connect to the server they want and send a serializable message. When they connect a server is spun up on the client to receive messages and bundles that return IP and Port into each request that goes out.
+
+
+\begin{lstlisting}
+public class TPacket implements
+    java.io.Serializable {
+  final Serializable message;
+  final TAddress address;
+
+  public TPacket(Serializable message,
+      TAddress address) {
+    this.message = message;
+    this.address = address;
+  }
+}
+\end{lstlisting}
+
+\paragraph{TAddress}
+The TAddress class exists for convenience and readability in the source. It consists only of a string for the server ip and a port. This is not exposed to the user except as an extended class in CausalParticipant. In previous projects we used InetSocketAddress to conveniently bundle both IP and Port, but continually had to split it into an InetAddress and integer to create sockets and log it to strings. It may be worth replacing with the more complicated but standardized objects as this package grows.
+
+\paragraph{ClientRunner}
+The ClientRunner thread is used in every single type of socket provided in the package. It is what the base socket's bind method passes every listener connection to and what populates the queue on which our receive method is built.
+
+In order to prove our package supports causal ordering messages in practice, we needed a way to reliably delay a message on the receiving end to mimic network delay. We've done that with a string comparison, but this is planned to be removed prior to public release.
+
+
+\begin{lstlisting}
+public class ClientRunner extends Thread {
+
+  Socket clientSocket;
+  ConcurrentLinkedQueue messageQueue;
+
+public ClientRunner(Socket clientSocket,
+      ConcurrentLinkedQueue messageQueue) {
+  this.clientSocket = clientSocket;
+  this.messageQueue = messageQueue;
+}
+
+public void run() {
+try {
+  ObjectInputStream in =
+    new ObjectInputStream(
+        clientSocket.getInputStream()
+    );
+  TPacket packet;
+  packet = (TPacket) in.readObject();
+  String delayTrigger =
+  "Hi from p1 -> p3 (causally first for p3)";
+  String packetMsg =
+    packet.message.toString();
+  if (packetMsg.equals(delayTrigger)) {
+    /* delay receiving to simulate slow
+        network in order to test the
+        causal ordering */
+    Thread.sleep(2000);
+  }
+  messageQueue.add(packet);
+  in.close();
+  clientSocket.close();
+} catch (Exception e) {
+...
+}
+} // end run
+} // end class
+
+
+
+\end{lstlisting}
+
+\subsection{Requestor and Replier Implementation}
+
+The Request/Response pattern is a common one and we admired ØMQ's simple Hello World after struggling with message handling in each homework all semester. It should also be a familiar pattern to anyone who has worked with websites and web servers.
+
+The Replier fills the role of the responder in the Request/Response pattern. This class started out as the first iteration of BaseSocket, but once we started adding the other patterns it was clear we needed to break them out into their own classes with similar but limited public methods. So the Replier class is relatively short but its uniqueness comes from caching the last sender so the user can simply receive() and reply() from multiple requests (all non-blocking) without having to juggle the sender's address.
+
+\begin{lstlisting}
+public class Replier extends BaseSocket {
+  private TAddress lastSender;
+
+  public Replier() {
+    super();
+  }
+
+  public void bind(String host, int port) {
+    super.bind(host, port);
+  }
+
+  public Serializable receive() {
+    TPacket packet = super.receivePacket();
+    lastSender = packet.address;
+    return packet.message;
+  }
+
+  public void reply(Serializable reply) {
+    super.send(reply, lastSender);
+  }
+
+}
+
+\end{lstlisting}
+
+Our Requestor class is the client in the Request/Response pattern and often there will be many of these talking to one server at a time. All a Requestor can do is connect, send, and receive, but the application can do any amount of work between sending and receiving without losing any messages sent in the interim. This is made possible by binding behind the scenes to a free port on the machine and packing that address with each request.
+
+We have not provided any way to close this hidden TCP listener because the assumption is the typical application using the Requestor class will only be connecting to a single server. Future iterations of this package will either provide a close method or better support using the same socket to connect to different servers. Also if the application calls for sending and receiving asymmetrically then the PushSocket class is going to be a better fit.
+
+
+\begin{lstlisting}
+public class Requestor extends BaseSocket {
+  private TAddress connectPoint;
+
+  public Requestor() {
+    super();
+  }
+
+  public void connect(String host, int port){
+    connectPoint = new TAddress(host, port);
+    /* clients will need a hidden listener
+        server to get replies */
+    bind("localhost", 0);
+  }
+
+  public void send(Serializable message) {
+    super.send(message, connectPoint);
+  }
+
+  public Serializable receive() {
+    TPacket packet = super.receivePacket();
+    return packet.message;
+  }
+}
+
+\end{lstlisting}
+
+The PushSocket class is designed for asymmetric message sending and receiving that does not need to be causally ordered. Once the PushSocket is bound it will begin queing any messages sent to it in the background. Work can be done between calling the receive method which pops one out of the queue. 
+
+However PushSocket is not dependent on the bind action. If the application doesn't call for receiving messages or they're handled another way such as the Request/Replier clasess, the PushSocket can still send a one way message to any other server with Send.
+
+For this class send does not bundle the reply address because the application may not need it and may not have it. If it is needed the user can bundle it into the serializable message they send.
+
+\subsection{Push Socket Implementation}
+\begin{lstlisting}
+public class PushSocket extends BaseSocket {
+
+  public PushSocket() {
+     super();
+  }
+
+  public void send(Serializable message,
+        String host, int port) {
+    super.sendOneWay(message,
+        new TAddress(host, port));
+  }
+
+  public void bind(String host, int port) {
+    super.bind(host, port);
+  }
+
+  public Serializable receive() {
+    return super.receivePacket().message;
+  }
+}
+
+\end{lstlisting}
+
 \subsection{Causal Order Socket Implementation}
 One of the classes that extend the Base Socket described above is the causal order socket implementation. Since received messages are buffered in a message queue, that approach had made it natural to extend it to create a class that can be used to enforce a causal order delivery of messages.
 
-The base socket is extended to add a new queue to hold messages are that are ready to be delivered. A data structure to hold a list of participating programs is also added to this socket implementation to build and maintain the matrix containing counts of messages that are sent between a given program and another. Instead of the normal TPacket class used in the BaseSocket to wrap the message,a derived class (CausalPacket) containing  a matrix data structure to go with each message is used.
+The base socket is extended to add a new queue to hold messages are that are ready to be delivered. A data structure of CausalParticipant objects is used to hold a list of participating programs is also added to this socket implementation. These are used to build and maintain the matrix containing counts of messages that are sent between a given program and another. Instead of the normal TPacket class used in the BaseSocket to wrap the message, a derived class (CausalPacket) containing  a matrix data structure to go with each message is used.
 
 The algorithm to ensure message causal order is embedded with in the causal socket's receive method to make the determination on what order to deliver the messages to each programs.
 
-Note : for testing purposes, in order for us to simulate the a message being out of order in causal sense, we have added some hard coded messages that are accepted at the TCP level in a delayed manner.
+A snippet from the causal ordering socket implementation looks like this:
 
-\subsection{Client Functions}
-\begin{enumerate}
-    \item Clients can send a message to a server
-    \item Clients can proceed without holding open a stream or a socket
-    \item Clients eventually wait to receive a message back
-    \item Clients can peek at the message queue to poll instead of wait
-\end{enumerate}
+\begin{lstlisting}
+public class CausalSocket extends BaseSocket{
+  int M[][];
+  int N;
+  LinkedList deliveryQ = new LinkedList();
+  ArrayList<CausalParticipant> participants;
+  ...
+  void connect(String host,int port)
+  boolean okayToRecv(int w[][], int srcId)
+  void checkPendingQ()
+  ...
+}
+\end{lstlisting}
 
-\subsection{Server Functions}
-\begin{enumerate}
-    \item java get
-\end{enumerate}
+and in a consuming code we will use it as the code below
 
-\subsection{Context Functions}
-\begin{enumerate}
-    \item 
-\end{enumerate}
+\begin{lstlisting}
+CausalSocket causalSocket = 
+new CausalSocket(servercount, participants);
+causalSocket.bind("localhost", 6000);
+...
+causalSocket1.connect("localhost", 6002);
+causalSocket1.send("Hello Causal!");
+...
 
-\subsection{Helper Classes}
-\begin{enumerate}
-    \item 
-\end{enumerate}
+\end{lstlisting}
 
-\subsection{Sample Library}
-\begin{enumerate}
-    \item 
-\end{enumerate}
-
+Note : for testing purposes, in order for us to simulate the a message being out of order in causal sense, we added a single hard coded message that is delayed at the TCP receiving level in the ClientRunner class.
 
 
 \section{Literature and Other Solutions}
 
-\href{http://zeromq.wdfiles.com/local--files/intro\%3Aread-the-manual/Middleware\%20Trends\%20and\%20Market\%20Leaders\%202011.pdf}{Middleware Trends and Market Leaders 2011} is a paper by A. Dworak, F. Ehm, W. Sliwinski, and M. Sobczak for CERN that analyzes the options for replacing the aging middleware for their 4000 servers and 80,000 devices. 
 
-\href{http://zeromq.org}{ZeroMQ} is "distributed messaging" with many features such as multiple languages, multiple platforms, multiple transport protocols, various patters, open source, and \href{http://zeromq.org/intro:read-the-manual}{good documentation}. The CERN paper rated it the highest and it's had continual development since then.
+\emph{Middleware Trends and Market Leaders 2011}\cite{trends} is a paper by A. Dworak, F. Ehm, W. Sliwinski, and M. Sobczak for CERN that analyzes the options for replacing the aging middleware for their 4000 servers and 80,000 devices. 
 
-\href{http://www.inspirel.com/yami4/}{YAMI4} is a "messaging solution for distributed systems" and positions itself as a \href{http://www.inspirel.com/articles/YAMI4_vs_ZeroMQ.html}{"competitor" to ZeroMQ}.
+\emph{ZeroMQ} (\url{http://zeromq.org}) is "distributed messaging" with many features such as multiple languages, multiple platforms, multiple transport protocols, various patterns, open source, and good documentation. The CERN paper rated it the highest and it's had continual development since then.
 
-\href{http://www.amqp.org/}{AMQP} stands for "The Advanced Message Queuing Protocol" which is also a good description of it. It became an \href{https://www.oasis-open.org/news/pr/iso-and-iec-approve-oasis-amqp-advanced-message-queuing-protocol}{ISO standard} in 2014 and has various \href{http://www.amqp.org/about/examples}{implementations} by 3rd parties. 
+\emph{YAMI4} (\url{http://www.inspirel.com/yami4/}) is a "messaging solution for distributed systems" and positions itself as a competitor to ZeroMQ.
 
-
-
+\emph{AMQP} (\url{http://www.amqp.org/}) stands for "The Advanced Message Queuing Protocol" which is also a good description of it. It became an ISO standard in 2014 and has various implementations by 3rd parties. 
 
 
+
+
+
+
+
+% if have a single appendix:
+%\appendix[Proof of the Zonklar Equations]
+% or
+%\appendix  % for no appendix heading
+% do not use \section anymore after \appendix, only \section*
+% is possibly needed
+
+% use appendices with more than one appendix
+% then use \section to start each appendix
+% you must declare a \section before using any
+% \subsection or using \label (\appendices by itself
+% starts a section numbered zero.)
+%
+
+
+\appendices
+\section{Condensed Javadoc}
+
+\textbf{Class CausalSocket}
+\\
+\emph{Constructors}
+\begin{lstlisting}
+CausalSocket(int n,
+ArrayList<CausalParticipant> participants)
+CausalSocket(int n,
+ArrayList<CausalParticipant> participants) 
+\end{lstlisting}
+
+\emph{Methods}
+\begin{lstlisting}
+void bind(java.lang.String host, int port)
+void connect(java.lang.String host, int port) 
+Serializable receive() 
+void send(java.io.Serializable message) 
+
+\end{lstlisting}
+\textbf{Class CausalParticipant}
+\\
+\emph{Constructors}
+\begin{lstlisting}
+CausalParticipant(String host, 
+    int port, 
+    int pid) 
+\end{lstlisting}
+\emph{Methods}
+\begin{lstlisting}
+boolean	equals(java.lang.Object obj) 
+java.lang.String	getIPAddress() 
+int	getPid() 
+java.lang.Integer	getPort() 
+int	hashCode() 
+void setPid(int pid) 
+void setPort(int port) 
+
+\end{lstlisting}
+\textbf{Class PushSocket}
+\\
+\emph{Constructors}
+\begin{lstlisting}
+PushSocket() 
+\end{lstlisting}
+\emph{Methods}
+\begin{lstlisting}
+void bind(String host, int port)
+Serializable receive() 
+void send(Serializable message, 
+    String host, 
+    int port) 
+
+\end{lstlisting}
+\textbf{Class Replier}
+\\
+\emph{Constructors}
+\begin{lstlisting}
+Replier() 
+\end{lstlisting}
+\emph{Methods}
+\begin{lstlisting}
+void bind(String host, int port)
+Serializable receive() 
+void reply(.Serializable reply) 
+
+\end{lstlisting}
+\textbf{Class Requestor}
+\\
+\emph{Constructors}
+\begin{lstlisting}
+Requestor() 
+\end{lstlisting}
+\emph{Methods}
+\begin{lstlisting}
+void connect(String host, int port) 
+Serializable receive() 
+void send(Serializable message) 
+
+\end{lstlisting}
+
+\section{Link to Source}
+\url{https://github.com/robertpateii/sptransit}
+
+
+
+
+% Can use something like this to put references on a page
+% by themselves when using endfloat and the captionsoff option.
+\ifCLASSOPTIONcaptionsoff
+  \newpage
+\fi
+
+
+
+% trigger a \newpage just before the given reference
+% number - used to balance the columns on the last page
+% adjust value as needed - may need to be readjusted if
+% the document is modified later
+%\IEEEtriggeratref{8}
+% The "triggered" command can be changed if desired:
+%\IEEEtriggercmd{\enlargethispage{-5in}}
+
+% references section
+
+% can use a bibliography generated by BibTeX as a .bbl file
+% BibTeX documentation can be easily obtained at:
+% http://mirror.ctan.org/biblio/bibtex/contrib/doc/
+% The IEEEtran BibTeX style support page is at:
+% http://www.michaelshell.org/tex/ieeetran/bibtex/
+%\bibliographystyle{IEEEtran}
+% argument is your BibTeX string definitions and bibliography database(s)
+%\bibliography{IEEEabrv,../bib/paper}
+%
+% <OR> manually copy in the resultant .bbl file
+% set second argument of \begin to the number of references
+% (used to reserve space for the reference number labels box)
+\begin{thebibliography}{3}
+
+\bibitem{trends}
+Dworak, A and Charrue, P and Ehm, F and Sliwinski, W and Sobczak, M.
+\emph{Middleware Trends And Market Leaders 2011.}
+\url{https://cds.cern.ch/record/1391410}
+
+
+%\bibitem{IEEEhowto:kopka}
+%H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus 0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+
+\end{thebibliography}
+
+% biography section
+% 
+% If you have an EPS/PDF photo (graphicx package needed) extra braces are
+% needed around the contents of the optional argument to biography to prevent
+% the LaTeX parser from getting confused when it sees the complicated
+% \includegraphics command within an optional argument. (You could create
+% your own custom macro containing the \includegraphics command to make things
+% simpler here.)
+%\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{mshell}}]{Michael Shell}
+% or if you just want to reserve a space for a photo:
+
+%\begin{IEEEbiography}{Michael Shell}Biography text here.\end{IEEEbiography}
+
+% if you will not have a photo at all:
+%\begin{IEEEbiographynophoto}
+%\end{IEEEbiographynophoto}
+
+% insert where needed to balance the two columns on the last page with
+% biographies
+%\newpage
+
+
+% You can push biographies down or up by placing
+% a \vfill before or after them. The appropriate
+% use of \vfill depends on what kind of text is
+% on the last page and whether or not the columns
+% are being equalized.
+
+%\vfill
+
+% Can be used to pull up biographies so that the bottom of the last one
+% is flush with the other column.
+%\enlargethispage{-5in}
+
+
+
+% that's all folks
 \end{document}
+
 
