@@ -1,4 +1,0 @@
-Assumptions:
-We only need to get the state and pending queue from one other server because we're assuming it will be in sync across all servers. If casual ordering fails then maybe not, but let's assume we have it.
-
-Also assuming that a server won't fail every in single "message all servers" loop if there are only 2 servers.
