@@ -50,7 +50,7 @@
 % http://www.michaelshell.org/tex/testflow/
 
 
-\documentclass[10pt,journal,compsoc]{IEEEtran}
+\documentclass[11pt,journal,compsoc]{IEEEtran}
 
 
 
@@ -307,6 +307,8 @@ sptransit is a package that allows a programmer to specify and control delivery 
 %\hfill mds
  
 %\hfill August 26, 2015
+
+\lstset{basicstyle=\small}
 
 \subsection{Use Case}
 As a distributed application developer, I need different instances of my distributed application to communicate with each other. I want to import a package into my code that lets me do that seamlessly with a few commands.
@@ -690,6 +692,9 @@ Note : for testing purposes, in order for us to simulate the a message being out
 
 
 \appendices
+\section{Link to Source}
+\url{https://github.com/robertpateii/sptransit}
+
 \section{Condensed Javadoc}
 
 \textbf{Class CausalSocket}
@@ -704,10 +709,10 @@ ArrayList<CausalParticipant> participants)
 
 \emph{Methods}
 \begin{lstlisting}
-void bind(java.lang.String host, int port)
-void connect(java.lang.String host, int port) 
+void bind(String host, int port)
+void connect(String host, int port) 
 Serializable receive() 
-void send(java.io.Serializable message) 
+void send(Serializable message) 
 
 \end{lstlisting}
 \textbf{Class CausalParticipant}
@@ -720,15 +725,17 @@ CausalParticipant(String host,
 \end{lstlisting}
 \emph{Methods}
 \begin{lstlisting}
-boolean	equals(java.lang.Object obj) 
-java.lang.String	getIPAddress() 
+boolean	equals(Object obj) 
+String getIPAddress() 
 int	getPid() 
-java.lang.Integer	getPort() 
+Integer getPort() 
 int	hashCode() 
 void setPid(int pid) 
 void setPort(int port) 
 
 \end{lstlisting}
+\newpage
+
 \textbf{Class PushSocket}
 \\
 \emph{Constructors}
@@ -754,7 +761,7 @@ Replier()
 \begin{lstlisting}
 void bind(String host, int port)
 Serializable receive() 
-void reply(.Serializable reply) 
+void reply(Serializable reply) 
 
 \end{lstlisting}
 \textbf{Class Requestor}
@@ -771,8 +778,6 @@ void send(Serializable message)
 
 \end{lstlisting}
 
-\section{Link to Source}
-\url{https://github.com/robertpateii/sptransit}
 
 
 
